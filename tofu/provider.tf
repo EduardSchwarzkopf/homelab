@@ -12,6 +12,10 @@ terraform {
       source  = "ryanwholey/pihole"
       version = "2.0.0-beta.1"
     }
+    postgresql = {
+      source  = "cyrilgdn/postgresql"
+      version = "1.25.0"
+    }
   }
 }
 
@@ -29,4 +33,14 @@ provider "proxmox" {
 provider "pihole" {
   url      = "https://pihole.lan.schwarzkopf.center"
   password = var.pihole_password
+}
+
+
+provider "postgresql" {
+  host      = "database-pg-prod"
+  port      = 5432
+  username  = "postgres"
+  password  = var.postgres_password
+  sslmode   = "disable"
+  superuser = true
 }

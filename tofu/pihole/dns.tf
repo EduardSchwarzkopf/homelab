@@ -1,5 +1,5 @@
 
 resource "pihole_dns_record" "homeserver" {
-  domain = local.homeserver_hostname
+  domain = var.proxmox_node_name
   ip     = "192.168.178.10"
 }

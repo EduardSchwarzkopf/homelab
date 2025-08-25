@@ -6,12 +6,3 @@ terraform {
     }
   }
 }
-
-provider "postgresql" {
-  host      = var.postgres_host
-  port      = var.postgres_port
-  username  = var.postgres_user
-  password  = var.postgres_password
-  sslmode   = "disable"
-  superuser = true
-}

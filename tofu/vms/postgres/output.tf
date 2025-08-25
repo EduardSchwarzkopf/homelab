@@ -1,5 +1,5 @@
 output "hostname" {
-  value = proxmox_virtual_environment_vm.postgres_vm.name
+  value = local.vm_name
 }
 
 output "postgres_user" {

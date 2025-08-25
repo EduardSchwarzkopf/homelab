@@ -47,9 +47,9 @@ runcmd:
   - usermod -aG docker "$(id -nu 1000)"
 
   # Create and secure the data directory
+  - su - ubuntu -c "cd /home/ubuntu && docker compose up -d"
   - chown 1000:1000 -R ${MOUNT_PATH}
   - chown 5050:5050 -R ${PGADMIN_DATA_PATH}
-  - su - ubuntu -c "cd /home/ubuntu && docker compose up -d"
 
 # Create docker-compose.yml for PostgreSQL
 write_files:

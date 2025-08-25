@@ -16,6 +16,9 @@ resource "postgresql_role" "app_user" {
 resource "postgresql_database" "app_db" {
   name  = var.app_name
   owner = postgresql_role.app_user.name
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "postgresql_grant" "app_privileges" {

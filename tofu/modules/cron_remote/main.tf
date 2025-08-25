@@ -1,6 +1,6 @@
 locals {
   timeout             = "30s"
-  cron_d_path         = local.cron_d_path
+  cron_d_path         = "/etc/cron.d"
   reload_cron_command = "sudo systemctl reload cron || sudo service cron reload"
 }
 

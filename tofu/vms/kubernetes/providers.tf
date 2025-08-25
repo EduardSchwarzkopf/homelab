@@ -14,5 +14,3 @@ terraform {
     }
   }
 }
-
-provider "talos" {}
