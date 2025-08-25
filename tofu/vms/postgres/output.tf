@@ -1,0 +1,15 @@
+output "hostname" {
+  value = proxmox_virtual_environment_vm.postgres_vm.name
+}
+
+output "postgres_user" {
+  value = local.postgres_user
+}
+
+output "postgres_port" {
+  value = local.postgres_port
+}
+
+output "id" {
+  value = proxmox_virtual_environment_vm.postgres_vm.id
+}

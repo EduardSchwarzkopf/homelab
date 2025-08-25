@@ -1,0 +1,11 @@
+cluster:
+  network:
+    cni:
+      name: none
+
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/qemu-guest-agent
+      - siderolabs/iscsi-tools
+      - siderolabs/util-linux-tools

@@ -1,0 +1,15 @@
+resources:
+  - ./resources
+
+patches:
+  - path: patches/ingress-nginx-ingress-class.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: IngressClass
+      name: nginx
+  - path: patches/ingress-nginx-deployment.yaml
+    target:
+      kind: Deployment
+      name: ingress-nginx-controller
+      namespace: ingress-nginx
