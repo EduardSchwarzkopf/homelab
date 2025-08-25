@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_vm" "postgres_data_vm" {
-  node_name = local.node_name
+  node_name = var.proxmox_node_name
   started   = false
   on_boot   = false
   name      = "${local.vm_name}-data-vm"
@@ -18,7 +18,7 @@ resource "proxmox_virtual_environment_vm" "postgres_data_vm" {
 }
 
 resource "proxmox_virtual_environment_vm" "postgres_vm" {
-  node_name = local.node_name
+  node_name = var.proxmox_node_name
   vm_id     = 5432
   name      = local.vm_name
 
@@ -26,7 +26,7 @@ resource "proxmox_virtual_environment_vm" "postgres_vm" {
 
   clone {
     vm_id     = 100
-    node_name = local.node_name
+    node_name = var.proxmox_node_name
   }
 
   cpu {

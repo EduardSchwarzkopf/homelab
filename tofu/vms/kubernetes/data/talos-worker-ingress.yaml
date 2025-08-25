@@ -1,0 +1,43 @@
+apiVersion: v1alpha1
+kind: NetworkDefaultActionConfig
+ingress: block
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: kubelet-ingress
+portSelector:
+  ports:
+    - 10250
+  protocol: tcp
+ingress:
+  - subnet: 192.168.178.0/24
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: apid-ingress
+portSelector:
+  ports:
+    - 50000
+  protocol: tcp
+ingress:
+  - subnet: 192.168.178.0/24
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: cni-vxlan
+portSelector:
+  ports:
+    - 8472
+  protocol: udp
+ingress:
+  - subnet: 192.168.178.0/24
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-8443-ingress
+portSelector:
+  ports:
+    - 8443
+  protocol: tcp
+ingress:
+  - subnet: 0.0.0.0/0

@@ -1,5 +1,4 @@
 locals {
-  node_name          = "homeserver"
   vm_name            = "database-pg-prod"
   mount_path         = "/mnt/data"
   postgres_data_path = "${local.mount_path}/pgdata"

@@ -1,7 +1,7 @@
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
   datastore_id = "local"
-  node_name    = local.node_name
+  node_name    = var.proxmox_node_name
 
   source_raw {
     data = templatefile("templates/cloud-config.tpl.yaml", {
