@@ -11,7 +11,11 @@ resource "ssh_resource" "cron" {
   timeout = local.timeout
 
   triggers = {
-    cron = "${var.cron_schedule} ${var.run_as_user} ${var.command}"
+    cron     = var.cron_schedule
+    run_as   = var.run_as_user
+    command  = var.command
+    ssh_user = var.user
+    host     = var.host
   }
 
   commands = [
