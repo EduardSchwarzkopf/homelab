@@ -18,8 +18,8 @@ module "shutdown_weekends" {
   source        = "../modules/cron_remote"
   host          = local.homeserver_hostname
   user          = var.node_ssh_user
-  cron_name     = "shutdown_weekdays"
-  cron_schedule = "0 1 * * 6,0"
+  cron_name     = "shutdown_weekends"
+  cron_schedule = "0 0 * * 6,0"
   run_as_user   = local.shutdown_as_user
   command       = local.shutdown_command
 }
