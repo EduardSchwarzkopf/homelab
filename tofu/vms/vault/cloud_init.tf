@@ -5,25 +5,15 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
 
   source_raw {
     data = templatefile("${path.module}/templates/cloud-config.tpl.yaml", {
-      public_key_openssh = trimspace(tls_private_key.ubuntu_vm_key.public_key_openssh)
+      public_key_openssh = trimspace(tls_private_key.vm_key.public_key_openssh)
       HOSTNAME           = local.vm_name
+      VAULT_VERSION      = local.vault_version
       MOUNT_PATH         = local.mount_path
-      PGADMIN_DATA_PATH  = local.pgadmin_data_path
-      DOCKER_COMPOSE_ENCODED = base64encode(templatefile("${path.module}/templates/docker-compose.tpl.yaml", {
-        POSTGRES_USER            = local.postgres_user
-        POSTGRES_PASSWORD        = var.postgres_password
-        POSTGRES_PORT            = local.postgres_port
-        PGADMIN_DEFAULT_PASSWORD = var.pgadmin_password
-        PGADMIN_DEFAULT_EMAIL    = var.pgadmin_email
-        POSTGRES_DATA_PATH       = local.postgres_data_path
-        PGADMIN_DATA_PATH        = local.pgadmin_data_path
-      }))
     })
 
     file_name = "${local.vm_name}.cloud-config.yaml"
   }
 }
-
 
 resource "proxmox_virtual_environment_file" "cloud_metadata" {
   content_type = "snippets"
