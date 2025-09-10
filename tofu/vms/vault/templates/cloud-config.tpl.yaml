@@ -94,10 +94,10 @@ runcmd:
     #!/bin/bash
     set -e
 
-    # Create vault user and directories
-    id vault &>/dev/null || useradd --system --home /etc/vault.d --shell /bin/false vault
-    mkdir -p ${MOUNT_PATH}/vault/data /etc/vault.d/tls
-    chown -R vault:vault ${MOUNT_PATH}/vault /etc/vault.d
+    # Ensure Vault directories exist with proper ownership
+    mkdir -p /etc/vault.d/tls
+    chown -R vault:vault /etc/vault.d
+    chmod 0750 /etc/vault.d
 
     # Download and install Vault
     cd /tmp
