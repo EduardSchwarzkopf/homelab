@@ -34,13 +34,3 @@ provider "pihole" {
   url      = "https://pihole.lan.schwarzkopf.center"
   password = var.pihole_password
 }
-
-
-provider "postgresql" {
-  host      = "database-pg-prod"
-  port      = 5432
-  username  = "postgres"
-  password  = var.postgres_password
-  sslmode   = "disable"
-  superuser = true
-}
