@@ -73,6 +73,7 @@ resource "proxmox_virtual_environment_vm" "postgres_vm" {
     }
 
     user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
+    meta_data_file_id = proxmox_virtual_environment_file.cloud_metadata.id
   }
 
   lifecycle {
