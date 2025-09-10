@@ -5,3 +5,4 @@ resources:
   - ./metallb
   - ingress-nginx.yaml
   - ./argocd
+  - ./longhorn
