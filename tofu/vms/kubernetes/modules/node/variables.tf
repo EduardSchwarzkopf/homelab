@@ -63,3 +63,21 @@ variable "disk_size" {
     error_message = "Disk size must be at least 10 GB."
   }
 }
+
+variable "longhorn_disk_enabled" {
+  description = "Whether to attach a Longhorn data disk"
+  type        = bool
+  default     = false
+}
+
+variable "longhorn_disk_size" {
+  description = "Longhorn data disk size in GB"
+  type        = number
+  default     = 100
+}
+
+variable "longhorn_datastore_id" {
+  description = "Proxmox datastore ID for Longhorn disk"
+  type        = string
+  default     = "zfs-longhorn"
+}

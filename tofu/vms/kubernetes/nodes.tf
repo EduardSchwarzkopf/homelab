@@ -22,4 +22,8 @@ module "worker" {
   disk_size         = 100
   memory            = 4
   cpu_cores         = 4
+
+  longhorn_disk_enabled = true
+  longhorn_disk_size    = 100
+  longhorn_datastore_id = "zfs-longhorn"
 }

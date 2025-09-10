@@ -1,0 +1,22 @@
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: longhorn
+provisioning:
+  diskSelector:
+    match: disk.transport == "virtio"
+  minSize: 20GiB
+  maxSize: 200GiB
+filesystem:
+  type: xfs
+---
+version: v1alpha1
+machine:
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/mnt/longhorn
+        options:
+          - bind
+          - rshared
+          - rw

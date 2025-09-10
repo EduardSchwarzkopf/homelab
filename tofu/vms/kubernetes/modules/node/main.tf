@@ -22,6 +22,15 @@ resource "proxmox_virtual_environment_vm" "vm" {
     size         = var.disk_size
   }
 
+  dynamic "disk" {
+    for_each = var.longhorn_disk_enabled ? [1] : []
+    content {
+      datastore_id = var.longhorn_datastore_id
+      interface    = "scsi1"
+      size         = var.longhorn_disk_size
+    }
+  }
+
   memory {
     dedicated = var.memory * 1024
   }
