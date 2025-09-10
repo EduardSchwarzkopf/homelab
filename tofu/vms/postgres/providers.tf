@@ -5,7 +5,7 @@ terraform {
       version = "0.81.0"
     }
     cloudinit = {
-      source  = "opentofu/cloudinit"
+      source  = "hashicorp/cloudinit"
       version = "2.3.7"
     }
   }
