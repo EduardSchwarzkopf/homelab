@@ -1,0 +1,134 @@
+#cloud-config
+hostname: ${HOSTNAME}
+create_hostname_file: true
+ssh_pwauth: false
+
+users:
+  - default
+  - name: vault
+    system: true
+    shell: /usr/sbin/nologin
+
+ssh_authorized_keys:
+  - ${public_key_openssh}
+
+device_aliases:
+  data_disk: /dev/sdb
+
+disk_setup:
+  data_disk:
+    table_type: gpt
+    layout: true
+    overwrite: false
+
+fs_setup:
+  - label: data
+    filesystem: ext4
+    device: data_disk
+    partition: auto
+    overwrite: false
+
+mounts:
+  - [data_disk.1, ${MOUNT_PATH}, auto, "defaults,nofail", "0", "2"]
+  
+package_update: true
+package_upgrade: true
+packages:
+  - curl
+  - unzip
+  - jq
+  - ufw
+  - ca-certificates
+  - gnupg
+  - lsb-release
+
+write_files:
+  - path: /etc/systemd/system/vault.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=HashiCorp Vault - Secret Management
+      Documentation=https://www.vaultproject.io/docs/
+      Requires=network-online.target
+      After=network-online.target
+
+      [Service]
+      User=vault
+      Group=vault
+      ExecStart=/usr/local/bin/vault server -config=/etc/vault.d/vault.hcl
+      ExecReload=/bin/kill --signal HUP $MAINPID
+      Restart=on-failure
+      LimitNOFILE=65536
+      ProtectSystem=full
+      ProtectHome=read-only
+      PrivateTmp=yes
+      CapabilityBoundingSet=CAP_IPC_LOCK
+      AmbientCapabilities=CAP_IPC_LOCK
+      NoNewPrivileges=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/vault.d/vault.hcl
+    defer: true
+    permissions: "0640"
+    owner: vault:vault
+    content: |
+      storage "file" {
+        path = "${MOUNT_PATH}/vault/data"
+      }
+
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_cert_file = "/etc/vault.d/tls/vault.crt"
+        tls_key_file  = "/etc/vault.d/tls/vault.key"
+      }
+
+      api_addr = "https://${HOSTNAME}:8200"
+      cluster_addr = "https://${HOSTNAME}:8201"
+      ui = true
+      disable_mlock = true
+
+runcmd:
+  - |
+    #!/bin/bash
+    set -e
+
+    # Create vault user and directories
+    id vault &>/dev/null || useradd --system --home /etc/vault.d --shell /bin/false vault
+    mkdir -p ${MOUNT_PATH}/vault/data /etc/vault.d/tls
+    chown -R vault:vault ${MOUNT_PATH}/vault /etc/vault.d
+
+    # Download and install Vault
+    cd /tmp
+    curl -fsSLO "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip"
+    curl -fsSLO "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS"
+    curl -fsSLO "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig"
+    grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -c
+    unzip -o vault_${VAULT_VERSION}_linux_amd64.zip
+    install -o root -g root -m 0755 vault /usr/local/bin/vault
+
+    # Set up self-signed TLS for initial use (replace with real certs for prod)
+    if [ ! -f /etc/vault.d/tls/vault.crt ]; then
+      openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+        -keyout /etc/vault.d/tls/vault.key \
+        -out /etc/vault.d/tls/vault.crt \
+        -subj "/CN=${HOSTNAME}"
+      chown vault:vault /etc/vault.d/tls/vault.*
+      chmod 600 /etc/vault.d/tls/vault.key
+      chmod 644 /etc/vault.d/tls/vault.crt
+    fi
+
+    # Enable and start Vault service
+    systemctl daemon-reload
+    systemctl enable vault
+    systemctl start vault
+
+    # Enable firewall
+    ufw allow 22/tcp
+    ufw allow 8200/tcp
+    ufw --force enable
+
+    # Enable automatic security updates
+    apt-get install -y unattended-upgrades
+    dpkg-reconfigure -f noninteractive unattended-upgrades
