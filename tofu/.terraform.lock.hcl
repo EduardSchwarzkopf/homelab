@@ -46,6 +46,24 @@ provider "registry.opentofu.org/cyrilgdn/postgresql" {
   ]
 }
 
+provider "registry.opentofu.org/hashicorp/cloudinit" {
+  version     = "2.3.7"
+  constraints = "2.3.7"
+  hashes = [
+    "h1:dkGeAxGbAGgglocp0fl1OzvT6O4KKsJTEsCW0ixdQJs=",
+    "zh:2d48b8452eae9bac2e62273e8f535f73694d8cb05ea38f4b27ee735dcc38eed4",
+    "zh:4add11b87e48d0e6ecd19243a06ecfc42fc07d0a3748fe568c2971d5f4767486",
+    "zh:4c9c4e3319cf3328595ea2d68eba7c604325fbcba38cd443e39e982b0b4e29f2",
+    "zh:503dd83a05b0421ecbcb140d5fdbe3a6b82f163495a82587a1390cf66d7a27be",
+    "zh:7dd34de7e68036dbbb70c249968a2a10bccba1cb92d3b4dccbc0eb65a3fc58ea",
+    "zh:a4d7b4480d38446b8da96ce4ecbc2e5a081c4ddc3da2bad97d7b228821b77895",
+    "zh:bdec6329c3d2d5f034080d9cd6f9a15a2c052faacd716f981e247b48e6845c01",
+    "zh:e1519544ae3f67196d144e18c21ad681dc29da3133a537ffdd5c2c6271b8db0c",
+    "zh:e58cd6b05ed51a6fa072e5de2208ba36a58557c3fb414d50c42b3d40a11366b7",
+    "zh:fafc4a49c297516f2a40490f9a7e6d2b437d77a94330797d4eead178c987ccb5",
+  ]
+}
+
 provider "registry.opentofu.org/hashicorp/dns" {
   version     = "3.4.3"
   constraints = "3.4.3"
@@ -148,24 +166,6 @@ provider "registry.opentofu.org/loafoe/ssh" {
     "zh:8e0716c9a628801284663cad3a8f70e026780f34d04fa5ffb822f0cd5876c353",
     "zh:8f19c94a72fb4cecdc70ac97f04c24fa24c46a4e125bbb7c24f642e95f753c70",
     "zh:a965929f10651c7139009aa509a6929f2205f90e85ce91a8354416d17624ed04",
-  ]
-}
-
-provider "registry.opentofu.org/opentofu/cloudinit" {
-  version     = "2.3.7"
-  constraints = "2.3.7"
-  hashes = [
-    "h1:dkGeAxGbAGgglocp0fl1OzvT6O4KKsJTEsCW0ixdQJs=",
-    "zh:2d48b8452eae9bac2e62273e8f535f73694d8cb05ea38f4b27ee735dcc38eed4",
-    "zh:4add11b87e48d0e6ecd19243a06ecfc42fc07d0a3748fe568c2971d5f4767486",
-    "zh:4c9c4e3319cf3328595ea2d68eba7c604325fbcba38cd443e39e982b0b4e29f2",
-    "zh:503dd83a05b0421ecbcb140d5fdbe3a6b82f163495a82587a1390cf66d7a27be",
-    "zh:7dd34de7e68036dbbb70c249968a2a10bccba1cb92d3b4dccbc0eb65a3fc58ea",
-    "zh:a4d7b4480d38446b8da96ce4ecbc2e5a081c4ddc3da2bad97d7b228821b77895",
-    "zh:bdec6329c3d2d5f034080d9cd6f9a15a2c052faacd716f981e247b48e6845c01",
-    "zh:e1519544ae3f67196d144e18c21ad681dc29da3133a537ffdd5c2c6271b8db0c",
-    "zh:e58cd6b05ed51a6fa072e5de2208ba36a58557c3fb414d50c42b3d40a11366b7",
-    "zh:fafc4a49c297516f2a40490f9a7e6d2b437d77a94330797d4eead178c987ccb5",
   ]
 }
 
