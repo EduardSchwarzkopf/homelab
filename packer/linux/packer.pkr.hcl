@@ -25,24 +25,20 @@ EOF
       iso_file = "ubuntu-${var.os_version}-live-server-amd64.iso"
       iso_checksums = {
         "24.04.2" = "sha256:d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d"
+        "24.04.3" = "sha256:c3514bf0056180d09376462a7a1b4f213c1d6e8ea67fae5c25099c6fd3d8274b"
       }
       boot_command = [
         "c<wait> ",
-        "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/'",
-        "<enter><wait>",
+        "linux /casper/vmlinuz ipv6.disable=1 --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/'",
+        "<enter><wait5s>",
         "initrd /casper/initrd",
-        "<enter><wait>",
+        "<enter><wait5s>",
         "boot",
         "<enter>"
       ]
       ssh_username = "ubuntu"
       ssh_password = "ubuntu"
-      provisioner = [
-        "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
-        "sudo systemctl start qemu-guest-agent",
-        "sudo cloud-init clean",
-        "sudo rm /etc/cloud/cloud.cfg.d/*"
-      ]
+      env          = {}
     }
     talos = {
       iso_file = "archlinux-2025.07.01-x86_64.iso"
@@ -56,13 +52,9 @@ EOF
       ]
       ssh_username = "root"
       ssh_password = "packer"
-      provisioner = [
-        "curl -v -L http://$PACKER_HTTP_IP:$PACKER_HTTP_PORT/schematic.yaml -o schematic.yaml",
-        "export SCHEMATIC=$(curl -L -X POST --data-binary @schematic.yaml https://factory.talos.dev/schematics | grep -o '\"id\":\"[^\"]*' | grep -o '[^\"]*$')",
-        # renovate: githubReleaseVar repo=siderolabs/talos
-        "curl -L https://factory.talos.dev/image/$SCHEMATIC/v${var.os_version}/nocloud-amd64.raw.xz -o /tmp/talos.raw.xz",
-        "xz -d -c /tmp/talos.raw.xz | dd of=/dev/sda && sync"
-      ]
+      env = {
+        OS_VERSION = var.os_version
+      }
     }
   }
 
@@ -84,7 +76,7 @@ source "proxmox-iso" "vm" {
 
   vm_name              = local.vm_name
   tags                 = "template;${local.os_family};${var.os}"
-  node                 = "pve"
+  node                 = "homeserver"
   template_name        = "${local.vm_name}-${local.build_version}"
   template_description = local.build_description
 
@@ -96,7 +88,7 @@ source "proxmox-iso" "vm" {
   disks {
     disk_size    = "10G"
     type         = "scsi"
-    storage_pool = "local-lvm"
+    storage_pool = "vm-os-pool"
     format       = "raw"
   }
 
@@ -119,7 +111,7 @@ source "proxmox-iso" "vm" {
   }
 
   cloud_init              = true
-  cloud_init_storage_pool = "local-lvm"
+  cloud_init_storage_pool = "vm-os-pool"
 
   boot         = "order=scsi0;ide2;net0"
   boot_wait    = "5s"
@@ -137,8 +129,7 @@ build {
   sources = ["source.proxmox-iso.vm"]
 
   provisioner "shell" {
-    execute_command = "echo '${local.cfg.ssh_password}' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    inline          = local.cfg.provisioner
-    skip_clean      = true
+    env     = local.cfg.env
+    scripts = ["${path.cwd}/scripts/${var.os}.sh"]
   }
 }

@@ -1,6 +1,15 @@
 #cloud-config
 autoinstall:
   version: 1
+  apt:
+    preserve_sources_list: false
+    mirror-selection:
+      primary:
+        - uri: "https://ftp.uni-stuttgart.de/ubuntu/"
+        - uri: "https://archive.ubuntu.com/ubuntu/"
+    fallback: offline-install
+    geoip: false
+
   early-commands:
     - sudo systemctl stop ssh # Stop sshd during the installer or else packer will try to connect too early
   locale: en_US
@@ -23,7 +32,7 @@ autoinstall:
   identity:
     hostname: localhost
     username: ubuntu
-    password: "$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0"
+    password: "$6$rounds=4096$HULx5lBiixNSDXiX$AcnWJAwDO3vxDGbIODY5E4jldDkIi5jfFOPICX5/0zsVQfdjV6WmUf6/AMdhpxssg0ahP19XziQSFhG.9fSKC."
   ssh:
     install-server: true
     allow-pw: yes
@@ -32,5 +41,9 @@ autoinstall:
   user-data:
     disable_root: true
     timezone: UTC
-  late-commands:
-    - 'echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /target/etc/sudoers.d/ubuntu'
+    write_files:
+      - path: /etc/sudoers.d/90-ubuntu-nopasswd
+        owner: root:root
+        permissions: "0440"
+        content: |
+          ubuntu ALL=(ALL) NOPASSWD:ALL
