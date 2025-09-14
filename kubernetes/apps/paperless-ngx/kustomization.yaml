@@ -4,6 +4,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - serviceaccount.yaml
-  - chart.yaml
+  - Chart.yaml
   - app.yaml
   - ingress.yaml
