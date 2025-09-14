@@ -93,7 +93,7 @@ output "ubuntu_vm_private_key" {
 }
 
 resource "local_file" "key" {
-  filename = "ubuntu.key"
+  filename = "keys/${local.vm_name}.key"
   content  = tls_private_key.ubuntu_vm_key.private_key_pem
 
   file_permission = 600
