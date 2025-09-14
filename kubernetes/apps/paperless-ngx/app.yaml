@@ -110,7 +110,7 @@ metadata:
     helm.sh/chart: redis-20.7.0
 type: Opaque
 data:
-  redis-password: "SnozbzVTVmhWdw=="
+  redis-password: "blowNEVMcU45SQ=="
 ---
 # Source: paperless-ngx/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -531,9 +531,9 @@ spec:
       annotations:
         
         vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/agent-inject-secret-paperless: kv-apps/data/paperless
+        vault.hashicorp.com/agent-inject-secret-paperless: kv-apps/data/paperless-ngx
         vault.hashicorp.com/agent-inject-template-paperless: |
-          {{- with secret "kv-apps/data/paperless" -}}
+          {{- with secret "kv-apps/data/paperless-ngx" -}}
           PAPERLESS_SECRET_KEY={{ .Data.data.username }}
           PAPERLESS_DBPASS={{ .Data.data.password }}
           {{- end }}
@@ -668,7 +668,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: ac79a67c1232d2b1aea4bdd7ce9b7866c456dcc149273051ab4128f3cdeb4b2b
+        checksum/secret: 876450ea90d2b234013d6b537885fa8e89527809e52c0013ae6e7817a6814185
     spec:
       
       securityContext:
@@ -836,7 +836,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 8fbe8456c45c8cad1158deb9634cc6b9648522920b9ba9dff00ebfb29b18f6b3
+        checksum/secret: 378f91f97c7af9a84982c16373ce4187c17f24d645f4afc876e802bbd1033d7d
     spec:
       
       securityContext:
