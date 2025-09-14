@@ -1,0 +1,42 @@
+image:
+  repository: ghcr.io/paperless-ngx/paperless-ngx
+  pullPolicy: IfNotPresent
+  tag: 2.18.3
+
+env:
+  TZ: "Europe/Berlin"
+  PAPERLESS_URL: "https://paperless.lan.schwarzkopf.center"
+  PAPERLESS_ALLOWED_HOSTS: "paperless.lan.schwarzkopf.center"
+  PAPERLESS_CSRF_TRUSTED_ORIGINS: "https://*.lan.schwarzkopf.center,https://paperless.lan.schwarzkopf.center"
+  PAPERLESS_CORS_ALLOWED_HOSTS: "https://paperless.lan.schwarzkopf.center"
+  PAPERLESS_TRUSTED_PROXIES: "*"
+
+  PAPERLESS_DBENGINE: "postgresql"
+  PAPERLESS_DBHOST: "database-pg-prod"
+  PAPERLESS_DBPORT: "5432"
+  PAPERLESS_DBNAME: "paperless"
+  PAPERLESS_DBUSER: "paperless"
+  PAPERLESS_DBSSLMODE: "disable"
+
+persistence:
+  media:
+    enabled: true
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    retain: true
+    mountPath: /usr/src/paperless/media
+  export:
+    enabled: true
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    mountPath: /usr/src/paperless/export
+    retain: true
+  consume:
+    enabled: true
+    retain: true
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 4Gi
+    mountPath: /usr/src/paperless/consume
