@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:EduardSchwarzkopf/homelab.git
+    repoURL: https://github.com/EduardSchwarzkopf/homelab.git
     path: kubernetes/bootstrap/resources/argocd
     targetRevision: main
   destination:

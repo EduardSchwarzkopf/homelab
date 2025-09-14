@@ -5,5 +5,7 @@ resources:
   - namespace.yaml
   - install.yaml
   - ingress.yaml
+  - app.yaml
+  - applicationset-apps.yaml
 
 namespace: argocd

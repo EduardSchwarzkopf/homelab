@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-directory
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: "https://github.com/EduardSchwarzkopf/homelab.git"
+        revision: main
+        directories:
+          - path: "kubernetes/apps/*"
+  template:
+    metadata:
+      name: "{{path}}"
+      labels:
+        apps-group: "managed-by-applicationset"
+    spec:
+      project: default
+      source:
+        repoURL: "https://github.com/EduardSchwarzkopf/homelab.git"
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: "{{path}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

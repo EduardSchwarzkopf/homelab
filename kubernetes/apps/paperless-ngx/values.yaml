@@ -40,3 +40,27 @@ persistence:
     accessMode: ReadWriteOnce
     size: 4Gi
     mountPath: /usr/src/paperless/consume
+
+serviceAccount:
+  create: false
+  name: paperless-ngx-sa
+
+podAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "role-paperless-ngx"
+  vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless"
+  vault.hashicorp.com/agent-inject-template-paperless: |
+    {{- with secret "kv-apps/data/paperless" -}}
+    PAPERLESS_SECRET_KEY={{ .Data.data.username }}
+    PAPERLESS_DBPASS={{ .Data.data.password }}
+    {{- end }}
+  vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
+
+extraArgs:
+  - /bin/sh
+  - -c
+  - |
+    if [ -f /vault/secrets/paperless ]; then
+      export $(sed -e 's/\r$//' /vault/secrets/paperless | xargs)
+    fi
+    exec /entrypoint.sh
