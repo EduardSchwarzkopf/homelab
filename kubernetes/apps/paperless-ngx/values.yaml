@@ -50,10 +50,10 @@ podAnnotations:
   vault.hashicorp.com/role: "role-paperless-ngx"
   vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless"
   vault.hashicorp.com/agent-inject-template-paperless: |
-    {{- with secret "kv-apps/data/paperless" -}}
+    {{`{{- with secret "kv-apps/data/paperless" -}}
     PAPERLESS_SECRET_KEY={{ .Data.data.username }}
     PAPERLESS_DBPASS={{ .Data.data.password }}
-    {{- end }}
+    {{- end }}`}}
   vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
 
 extraArgs:
