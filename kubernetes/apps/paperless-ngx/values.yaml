@@ -49,18 +49,10 @@ podAnnotations:
   vault.hashicorp.com/agent-inject: "true"
   vault.hashicorp.com/role: "role-paperless-ngx"
   vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
+  vault.hashicorp.com/agent-inject-env-paperless: "kv-apps/data/paperless-ngx"
   vault.hashicorp.com/agent-inject-template-paperless: |
     {{`{{- with secret "kv-apps/data/paperless-ngx" -}}
     PAPERLESS_SECRET_KEY={{ .Data.data.PAPERLESS_SECRET_KEY }}
     PAPERLESS_DBPASS={{ .Data.data.PAPERLESS_DBPASS }}
     {{- end }}`}}
   vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
-
-extraArgs:
-  - /bin/sh
-  - -c
-  - |
-    if [ -f /vault/secrets/paperless ]; then
-      export $(sed -e 's/\r$//' /vault/secrets/paperless | xargs)
-    fi
-    exec /entrypoint.sh

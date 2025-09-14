@@ -110,7 +110,7 @@ metadata:
     helm.sh/chart: redis-20.7.0
 type: Opaque
 data:
-  redis-password: "azN1SjdoTmtEVg=="
+  redis-password: "Z1NLaWkzSXBncg=="
 ---
 # Source: paperless-ngx/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -531,6 +531,7 @@ spec:
       annotations:
         
         vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-env-paperless: kv-apps/data/paperless-ngx
         vault.hashicorp.com/agent-inject-secret-paperless: kv-apps/data/paperless-ngx
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
@@ -668,7 +669,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 3bc4fbced0e2a4bcdd409758a8c42555928cdd6a6897811633bdad4ec2493c86
+        checksum/secret: 4026c10789b3e9480761586dec7b225c07c39701d3818068befcdc0b23cbfa59
     spec:
       
       securityContext:
@@ -836,7 +837,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: b4d5e267adb69e2ebd14c054ab247c6239fdc571c508c8262392599f384802e2
+        checksum/secret: 474f663dfd4409afff2bd5bfe8b6a12585e8d81cdf5d72d58052392116249971
     spec:
       
       securityContext:
