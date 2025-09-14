@@ -12,7 +12,7 @@ spec:
           - path: "kubernetes/apps/*"
   template:
     metadata:
-      name: "{{path}}"
+      name: "{{path.basename}}"
       labels:
         apps-group: "managed-by-applicationset"
     spec:
@@ -23,7 +23,7 @@ spec:
         path: "{{path}}"
       destination:
         server: "https://kubernetes.default.svc"
-        namespace: "{{path}}"
+        namespace: "{{path.basename}}"
       syncPolicy:
         automated:
           prune: true
