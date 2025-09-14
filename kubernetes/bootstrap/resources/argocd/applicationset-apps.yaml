@@ -14,7 +14,7 @@ spec:
     metadata:
       name: "{{path.basename}}"
       labels:
-        apps-group: "managed-by-applicationset"
+        apps-group: managed-by-applicationset
     spec:
       project: default
       source:
