@@ -1,5 +1,5 @@
 locals {
-  paperless_app = "paperless"
+  paperless_app = "paperless-ngx"
 }
 
 resource "vault_kv_secret_v2" "paperless" {
