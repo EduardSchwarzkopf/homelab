@@ -49,10 +49,6 @@ spec:
       containers:
         - name: samba
           image: dperson/samba:latest
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            allowPrivilegeEscalation: false
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
