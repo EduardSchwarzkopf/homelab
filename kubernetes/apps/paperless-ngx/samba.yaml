@@ -63,12 +63,6 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /mnt/consume
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
       volumes:
         - name: consume
           persistentVolumeClaim:
