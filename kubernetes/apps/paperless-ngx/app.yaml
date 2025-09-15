@@ -110,7 +110,7 @@ metadata:
     helm.sh/chart: redis-20.7.0
 type: Opaque
 data:
-  redis-password: "eEZrTVB3MDRNOA=="
+  redis-password: "ZDFEeVU3bkdsaQ=="
 ---
 # Source: paperless-ngx/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -668,7 +668,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 0d9f38a512f34be3eefa3fd29af027ac227f2f5472633b44670a2696fadb2495
+        checksum/secret: cd95b6ef2e3d61b84c06384cb07e90153332c2c7e3ad0b2678ec42df85f11825
     spec:
       
       securityContext:
@@ -836,7 +836,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 6e63dfe63ecefda1f77aa6f8d1a96c0157ab1c500fb9de3a9e701b2ee47218aa
+        checksum/secret: 726dc48144fdc90c28a519baebf0df4020b23673c1819b32aedd162c3d0ed393
     spec:
       
       securityContext:

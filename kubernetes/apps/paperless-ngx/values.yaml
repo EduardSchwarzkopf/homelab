@@ -55,3 +55,9 @@ podAnnotations:
     export PAPERLESS_DBPASS="{{ .Data.data.PAPERLESS_DBPASS }}"
     {{- end }}`}}
   vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
+
+extraArgs:
+  - /bin/bash
+  - -c
+  - |
+    printenv
