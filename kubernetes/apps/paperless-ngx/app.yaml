@@ -110,7 +110,7 @@ metadata:
     helm.sh/chart: redis-20.7.0
 type: Opaque
 data:
-  redis-password: "S1ZvMFRZRUVPVQ=="
+  redis-password: "bkw3OVoza1hscQ=="
 ---
 # Source: paperless-ngx/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -549,8 +549,6 @@ spec:
       
       serviceAccountName: paperless-ngx-sa
       automountServiceAccountToken: true
-      securityContext:
-        fsGroup: 1000
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
       containers:
@@ -675,7 +673,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: b12460493491482c690f20e4581e8d1406a2339b330757b257daa0587329212c
+        checksum/secret: ee6f62e90b6a1d7533395ec804e18cd98f2a15a821ada186081bc93a29b108cc
     spec:
       
       securityContext:
@@ -843,7 +841,7 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 3b31e54fca68e8dace53c1fb0b6b7c5df262217fe6c9d33e3d572a7deefcaa98
+        checksum/secret: 8b339b9e9bf13528fe4229b7ee60520b8d6a87cba2a2e45997f2d6cb0ec9afeb
     spec:
       
       securityContext:

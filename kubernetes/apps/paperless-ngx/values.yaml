@@ -42,9 +42,6 @@ persistence:
     size: 4Gi
     mountPath: /usr/src/paperless/consume
 
-podSecurityContext:
-  fsGroup: 1000
-
 serviceAccount:
   create: false
   name: paperless-ngx-sa
