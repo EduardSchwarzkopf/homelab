@@ -6,3 +6,4 @@ resources:
   - serviceaccount.yaml
   - ingress.yaml
   - app.yaml
+  - samba.yaml

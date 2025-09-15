@@ -8,6 +8,8 @@ resource "vault_kv_secret_v2" "paperless" {
   data_json = jsonencode({
     PAPERLESS_SECRET_KEY = "changeme"
     PAPERLESS_DBPASS     = "changeme"
+    SAMBA_USER           = "changme"
+    SAMBA_PASSWORD       = "changme"
   })
   lifecycle {
     ignore_changes = [data_json]

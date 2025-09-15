@@ -529,7 +529,6 @@ spec:
   template:
     metadata:
       annotations:
-        
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/agent-inject-file-paperless: paperless-ngx
         vault.hashicorp.com/agent-inject-secret-paperless: kv-apps/data/paperless-ngx
@@ -546,7 +545,9 @@ spec:
         app.kubernetes.io/name: paperless-ngx
         app.kubernetes.io/instance: paperless-ngx
     spec:
-      
+      securityContext:
+        fsGroup: 1000
+
       serviceAccountName: paperless-ngx-sa
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
@@ -588,7 +589,7 @@ spec:
             - name: PAPERLESS_TIME_ZONE
               value: Europe/Berlin
             - name: PAPERLESS_TRUSTED_PROXIES
-              value: '*'
+              value: "*"
             - name: PAPERLESS_URL
               value: https://paperless.lan.schwarzkopf.center
             - name: TZ
@@ -675,7 +676,6 @@ spec:
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
         checksum/secret: 92e6ae6bfa562082373c099722f488b21317498c94be71fb68e6c7f104c3745f
     spec:
-      
       securityContext:
         fsGroup: 1001
         fsGroupChangePolicy: Always
@@ -685,7 +685,7 @@ spec:
       automountServiceAccountToken: false
       affinity:
         podAffinity:
-          
+
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
@@ -697,7 +697,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
-          
+
       enableServiceLinks: true
       terminationGracePeriodSeconds: 30
       containers:
@@ -708,7 +708,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
             readOnlyRootFilesystem: true
             runAsGroup: 1001
             runAsNonRoot: true
@@ -843,7 +843,6 @@ spec:
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
         checksum/secret: beb841e0dcc791fc81287fa375455374c081f09e8904396a2fdf41128527d94c
     spec:
-      
       securityContext:
         fsGroup: 1001
         fsGroupChangePolicy: Always
@@ -853,7 +852,7 @@ spec:
       automountServiceAccountToken: false
       affinity:
         podAffinity:
-          
+
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
@@ -865,7 +864,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
-          
+
       enableServiceLinks: true
       terminationGracePeriodSeconds: 30
       containers:
@@ -876,7 +875,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
             readOnlyRootFilesystem: true
             runAsGroup: 1001
             runAsNonRoot: true
