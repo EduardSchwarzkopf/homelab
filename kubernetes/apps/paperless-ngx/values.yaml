@@ -17,6 +17,7 @@ env:
   PAPERLESS_DBNAME: "paperless"
   PAPERLESS_DBUSER: "paperless"
   PAPERLESS_DBSSLMODE: "disable"
+  BASH_ENV: /vault/secrets/paperless-ngx
 
 persistence:
   media:
@@ -55,10 +56,6 @@ podAnnotations:
     export PAPERLESS_DBPASS="{{ .Data.data.PAPERLESS_DBPASS }}"
     {{- end }}`}}
   vault.hashicorp.com/agent-pre-populate: "true"
-  vault.hashicorp.com/agent-inject-file-paperless: "paperless-env" # results in /vault/secrets/paperless-env
+  vault.hashicorp.com/agent-inject-file-paperless: "paperless-ngx"
   vault.hashicorp.com/secret-volume-path-paperless: "/vault/secrets"
   vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
-
-extraEnv:
-  - name: BASH_ENV
-    value: "/vault/secrets/paperless-env"
