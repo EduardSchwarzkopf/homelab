@@ -110,7 +110,7 @@ metadata:
     helm.sh/chart: redis-20.7.0
 type: Opaque
 data:
-  redis-password: "a2kyZm81UnJveA=="
+  redis-password: "WGhQY3hQWkZBTw=="
 ---
 # Source: paperless-ngx/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -529,6 +529,7 @@ spec:
   template:
     metadata:
       annotations:
+        
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/agent-inject-file-paperless: paperless-ngx
         vault.hashicorp.com/agent-inject-secret-paperless: kv-apps/data/paperless-ngx
@@ -545,9 +546,7 @@ spec:
         app.kubernetes.io/name: paperless-ngx
         app.kubernetes.io/instance: paperless-ngx
     spec:
-      securityContext:
-        fsGroup: 1000
-
+      
       serviceAccountName: paperless-ngx-sa
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
@@ -589,7 +588,7 @@ spec:
             - name: PAPERLESS_TIME_ZONE
               value: Europe/Berlin
             - name: PAPERLESS_TRUSTED_PROXIES
-              value: "*"
+              value: '*'
             - name: PAPERLESS_URL
               value: https://paperless.lan.schwarzkopf.center
             - name: TZ
@@ -674,8 +673,9 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: 92e6ae6bfa562082373c099722f488b21317498c94be71fb68e6c7f104c3745f
+        checksum/secret: 1e08eee4fc5f052f2d7c215637457f662d0a972ed53ac42917e5236c596f0ea9
     spec:
+      
       securityContext:
         fsGroup: 1001
         fsGroupChangePolicy: Always
@@ -685,7 +685,7 @@ spec:
       automountServiceAccountToken: false
       affinity:
         podAffinity:
-
+          
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
@@ -697,7 +697,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
-
+          
       enableServiceLinks: true
       terminationGracePeriodSeconds: 30
       containers:
@@ -708,7 +708,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             readOnlyRootFilesystem: true
             runAsGroup: 1001
             runAsNonRoot: true
@@ -841,8 +841,9 @@ spec:
         checksum/configmap: 2a9ab4a5432825504d910f022638674ce88eaefe9f9f595ad8bc107377d104fb
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: cc90fe05d6c66416f8e9d4ade871a5066f7fbfb27c01b90d291f6a72f871ce45
-        checksum/secret: beb841e0dcc791fc81287fa375455374c081f09e8904396a2fdf41128527d94c
+        checksum/secret: 2acbcd479392d46b5b3e12045ae245d4aeebc0e17de40d5645dcd097bf185a50
     spec:
+      
       securityContext:
         fsGroup: 1001
         fsGroupChangePolicy: Always
@@ -852,7 +853,7 @@ spec:
       automountServiceAccountToken: false
       affinity:
         podAffinity:
-
+          
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
@@ -864,7 +865,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
-
+          
       enableServiceLinks: true
       terminationGracePeriodSeconds: 30
       containers:
@@ -875,7 +876,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             readOnlyRootFilesystem: true
             runAsGroup: 1001
             runAsNonRoot: true
