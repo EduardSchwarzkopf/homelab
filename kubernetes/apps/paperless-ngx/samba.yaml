@@ -32,15 +32,33 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
+        - name: fix-perms
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              # ensure mount is writable by UID:GID 1000
+              if [ -d /mnt/consume ]; then
+                chown -R 1000:1000 /mnt/consume || true
+                chmod -R g+rwX /mnt/consume || true
+              fi
+          volumeMounts:
+            - name: consume
+              mountPath: /mnt/consume
       containers:
         - name: samba
           image: dperson/samba:latest
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
           args:
             - "-s"
-            - "consume;/mnt/consume;yes;no;yes;all;none;1000;1000"
+            - "consume;/mnt/consume;yes;no;no;${SAMBA_USER};none;${SAMBA_USER};${SAMBA_USER}"
             - "-u"
             - "${SAMBA_USER};${SAMBA_PASSWORD}"
             - "-p"
