@@ -54,7 +54,7 @@ spec:
               value: /vault/secrets/smb
           args:
             - "-s"
-            - "consume;/mnt/consume;yes;no;no;${SAMBA_USER};none;${SAMBA_USER};${SAMBA_USER}"
+            - "consume;/mnt/consume;yes;no;no;1000;1000;1000"
             - "-u"
             - "${SAMBA_USER};${SAMBA_PASSWORD}"
             - "-p"
