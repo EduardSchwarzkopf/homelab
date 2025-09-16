@@ -20,7 +20,7 @@ spec:
         vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
-          export SAMBA_PASSWORD="{{ .Data.data.SAMBA_PASSWORD }}"
+          PASS="{{ .Data.data.SAMBA_PASSWORD }}"
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
         vault.hashicorp.com/agent-pre-populate: "true"
@@ -40,10 +40,8 @@ spec:
             - /bin/bash
             - -c
             - |
-              echo "password is: ${SAMBA_PASSWORD}" > /pass
-              cat /vault/secrets/smb > /vv
-              source /vault/secrets/smb
-              export PASS="${SAMBA_PASSWORD:-$PASS}"
+              cat /vault/secrets/smb > /vvc
+              export $(cat /vault/secrets/smb | xargs)
               exec /usr/bin/samba.sh
           env:
             - name: NAME
