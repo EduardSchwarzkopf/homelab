@@ -33,8 +33,11 @@ spec:
       containers:
         - name: samba
           image: ghcr.io/servercontainers/samba:latest
+          command: ["/bin/sh", "-c"]
           args:
-            ["source /vault/secrets/smb && /container/scripts/entrypoint.sh"]
+            - |
+              source /vault/secrets/smb &&
+              /container/scripts/entrypoint.sh
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
