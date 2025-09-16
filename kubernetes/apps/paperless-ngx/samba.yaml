@@ -23,7 +23,8 @@ spec:
           PASS="{{ .Data.data.SAMBA_PASSWORD }}"
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
-        vault.hashicorp.com/agent-pre-populate: "true"    spec:
+        vault.hashicorp.com/agent-pre-populate: "true"
+    spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
         fsGroup: 1000
@@ -37,7 +38,7 @@ spec:
               exec /usr/bin/samba.sh
           env:
             - name: BASH_ENV
-              value: /vault/secrets/paperless
+              value: /vault/secrets/smb
             - name: NAME
               value: "consume"
             - name: USER
