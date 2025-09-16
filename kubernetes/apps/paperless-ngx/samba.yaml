@@ -1,16 +1,22 @@
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata: { name: paperless-ngx-secret, namespace: paperless-ngx }
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: vault-paperless
+  namespace: paperless-ngx
 spec:
-  provider:
-    vault:
-      server: "https://vault.lan.schwarzkopf.center"
-      path: "kv-apps/data/paperless-ngx"
-  refreshInterval: 1m
-  target:
-    name: paperless-ngx-k8s-secret
-    creationPolicy: Owner
+  provider: vault
+  parameters:
+    vaultAddress: "https://vault.lan.schwarzkopf.center"
+    roleName: "role-paperless-ngx"
+    objects: |
+      - objectName: "paperless-ngx-samba"
+        objectType: "kv"
+        secretPath: "kv-apps/data/paperless-ngx"
+        keys:
+          - "SAMBA_PASSWORD"
+
 ---
+# Deployment mounting the CSI volume and sourcing the mounted secret
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,21 +40,18 @@ spec:
       containers:
         - name: samba
           image: ghcr.io/servercontainers/samba:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ -f /mnt/secrets-store/SAMBA_PASSWORD ]; then
+                export SAMBA_PASSWORD="$(cat /mnt/secrets-store/SAMBA_PASSWORD)"
+              fi
+              export ACCOUNT_paperless="${SAMBA_PASSWORD}"
+              exec /container/scripts/entrypoint.sh
           env:
             - name: SAMBA_LOG_LEVEL
               value: "1"
-            - name: ACCOUNT_paperless
-              valueFrom:
-                secretKeyRef:
-                  name: paperless-ngx-k8s-secret
-                  key: SAMBA_PASSWORD
-            - name: SAMBA_VOLUME_CONFIG_CONSUME
-              value: |
-                [PAPERLESS_CONSUME]
-                  path = /mnt/consume
-                  read only = no
-                  guest ok = no
-                  valid users = paperless
           securityContext:
             runAsUser: 0
           ports:
@@ -59,10 +62,20 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /mnt/consume
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
       volumes:
         - name: consume
           persistentVolumeClaim:
             claimName: paperless-ngx-consume
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "vault-paperless"
+
 ---
 apiVersion: v1
 kind: Service
