@@ -30,6 +30,27 @@ spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
         fsGroup: 1000
+      initContainers:
+        - name: wait-for-pass
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              timeout=60
+              i=0
+              until [ -s /run/secrets/pass ]; do
+                i=$((i+1))
+                if [ "$i" -ge "$timeout" ]; then
+                  echo "timed out waiting for /run/secrets/pass" >&2
+                  exit 1
+                fi
+                sleep 0.5
+              done
+              echo "/run/secrets/pass is present"
+          volumeMounts:
+            - name: vault-secrets-volume # must match the secret-projection volume name created by the injector
+              mountPath: /run/secrets
       containers:
         - name: samba
           image: dockurr/samba:4.21.6
