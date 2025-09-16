@@ -20,7 +20,6 @@ spec:
         vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
-          export SAMBA_USER="{{ .Data.data.SAMBA_USER }}"
           export SAMBA_PASSWORD="{{ .Data.data.SAMBA_PASSWORD }}"
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
@@ -39,7 +38,7 @@ spec:
               value: /vault/secrets/smb
             - name: SAMBA_LOG_LEVEL
               value: "1"
-            - name: ACCOUNT_${SAMBA_USER}
+            - name: ACCOUNT_paperless
               value: "${SAMBA_PASSWORD}"
             - name: SAMBA_CONF_SHARE_CONSUME
               value: |
