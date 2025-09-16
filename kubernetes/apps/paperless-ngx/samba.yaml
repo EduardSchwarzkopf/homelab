@@ -34,6 +34,13 @@ spec:
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 0
+          command: ["/bin/sh", "-c"]
+          args:
+            - . /vault/secrets/paperless && exec "$@"
+            - "/usr/local/bin/docker-entrypoint.sh"
+            - "smbd"
+            - "-F"
+
           env:
             - name: BASH_ENV
               value: /vault/secrets/paperless
