@@ -33,24 +33,21 @@ spec:
         fsGroup: 1000
       containers:
         - name: samba
-          image: dperson/samba:latest
+          image: servercontainers/samba:latest
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
-            - name: USERID
-              value: "1000"
-            - name: GROUPID
-              value: "1000"
-            - name: PERMISSIONS
-              value: "1"
+            - name: ACCOUNT_${SAMBA_USER}
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-ngx-secret
+                  key: SAMBA_PASSWORD
+            - name: SAMBA_VOLUME_CONFIG_consume
+              value: "path = /mnt/consume; browseable = yes; guest ok = no; read only = no; valid users = ${SAMBA_USER}"
+            - name: SAMBA_CONF_WORKGROUP
+              value: WORKGROUP
           securityContext:
             runAsUser: 0
-          args:
-            - "-s"
-            - "consume;/mnt/consume;yes;no;no;${SAMBA_USER};${SAMBA_USER};${SAMBA_USER}"
-            - "-u"
-            - "${SAMBA_USER};${SAMBA_PASSWORD}"
-            - "-p"
           ports:
             - containerPort: 445
               protocol: TCP
