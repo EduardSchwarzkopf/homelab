@@ -33,19 +33,20 @@ spec:
         fsGroup: 1000
       containers:
         - name: samba
-          image: servercontainers/samba:latest
+          image: ghcr.io/servercontainers/samba:latest
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
+            - name: SAMBA_LOG_LEVEL
+              value: "1"
             - name: ACCOUNT_${SAMBA_USER}
-              valueFrom:
-                secretKeyRef:
-                  name: paperless-ngx-secret
-                  key: SAMBA_PASSWORD
-            - name: SAMBA_VOLUME_CONFIG_consume
-              value: "path = /mnt/consume; browseable = yes; guest ok = no; read only = no; valid users = ${SAMBA_USER}"
-            - name: SAMBA_CONF_WORKGROUP
-              value: WORKGROUP
+              value: "${SAMBA_PASSWORD}"
+            - name: SAMBA_CONF_SHARE_CONSUME
+              value: |
+                path = /mnt/consume
+                read only = no
+                guest ok = no
+                valid users = ${SAMBA_USER}
           securityContext:
             runAsUser: 0
           ports:
