@@ -34,16 +34,14 @@ spec:
       containers:
         - name: samba
           image: dockurr/samba:latest
-          # run tini as PID1 then bash wrapper to source Vault file and exec the real script
           command:
             - /sbin/tini
             - --
             - /bin/bash
             - -c
             - |
-
-              source /vault/secrets/smb
               echo "password is: ${SAMBA_PASSWORD}" > /pass
+              source /vault/secrets/smb
               export PASS="${SAMBA_PASSWORD:-$PASS}"
               exec /usr/bin/samba.sh
           env:
