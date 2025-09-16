@@ -20,7 +20,7 @@ spec:
         vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
-          {"USER":"{{ .Data.data.SAMBA_USER }}","PASS":"{{ .Data.data.SAMBA_PASSWORD }}"}
+          export SAMBA_PASSWORD="{{ .Data.data.SAMBA_PASSWORD }}"
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
         vault.hashicorp.com/agent-pre-populate: "true"
@@ -30,13 +30,19 @@ spec:
         fsGroup: 1000
       containers:
         - name: samba
-          image: dockurr/samba:latest
-          envFrom:
-            - secretRef:
-                name: paperless
+          image: crazymax/samba:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
           env:
-            - name: NAME
-              value: consume
+            - name: BASH_ENV
+              value: /vault/secrets/paperless
+            - name: SAMBA_PASSWORD
+              value: "${SAMBA_PASSWORD}"
+            - name: SAMBA_USER
+              value: "paperless"
+            - name: TZ
+              value: "Europe/Berlin"
           ports:
             - containerPort: 445
               protocol: TCP
@@ -44,11 +50,15 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: consume
-              mountPath: /storage
+              mountPath: /mnt/consume
+            - name: vault-secrets
+              mountPath: /vault/secrets
+              readOnly: true
       volumes:
         - name: consume
           persistentVolumeClaim:
             claimName: paperless-ngx-consume
+
 ---
 apiVersion: v1
 kind: Service
