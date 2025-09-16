@@ -42,7 +42,7 @@ spec:
             - /bin/bash
             - -c
             - |
-              exec /usr/bin/samba.sh
+              PASS=$(cat /vault/secrets/paperless) exec /usr/bin/samba.sh
           env:
             - name: BASH_ENV
               value: /vault/secrets/paperless
