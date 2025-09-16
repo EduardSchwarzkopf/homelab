@@ -7,7 +7,7 @@ data:
   config.yml.tmpl: |
     auth:
       - user: paperless
-        group: sambagroup
+        group: paperless
         uid: 1000
         gid: 1000
         password: ${SAMBA_PASSWORD}
