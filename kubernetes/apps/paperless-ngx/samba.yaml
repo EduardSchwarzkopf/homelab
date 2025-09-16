@@ -50,6 +50,7 @@ spec:
             - "consume;/mnt/consume;yes;no;no;${SAMBA_USER};${SAMBA_USER};${SAMBA_USER}"
             - "-u"
             - "${SAMBA_USER};${SAMBA_PASSWORD}"
+            - "-p"
           ports:
             - containerPort: 445
               protocol: TCP
