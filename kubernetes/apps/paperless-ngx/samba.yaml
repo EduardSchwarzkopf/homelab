@@ -20,7 +20,7 @@ spec:
         vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
-          export JUHUUUUUUU="{{ .Data.data.SAMBA_PASSWORD }}""
+          export JUHUUUUUUU="{{ .Data.data.SAMBA_PASSWORD }}"
           {{- end }}
         vault.hashicorp.com/agent-inject-secret-pass: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-pass: |
