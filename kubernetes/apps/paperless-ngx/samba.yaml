@@ -24,30 +24,33 @@ spec:
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
         vault.hashicorp.com/agent-pre-populate: "true"
+        vault.hashicorp.com/agent-inject-file-paperless: "smb"
+        vault.hashicorp.com/secret-volume-path-paperless: "/vault/secrets"
     spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
         fsGroup: 1000
       containers:
         - name: samba
-          image: crazymax/samba:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/servercontainers/samba:latest
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "if [ -f /vault/secrets/smb ]; then . /vault/secrets/smb; fi; exec /container/scripts/entrypoint.sh",
+            ]
+          env:
+            - name: SAMBA_LOG_LEVEL
+              value: "1"
+            - name: SAMBA_VOLUME_CONFIG_CONSUME
+              value: |
+                [PAPERLESS_CONSUME]
+                  path = /mnt/consume
+                  read only = no
+                  guest ok = no
+                  valid users = paperless
           securityContext:
             runAsUser: 0
-          command: ["/bin/sh", "-c"]
-          args:
-            - . /vault/secrets/paperless && exec "$@"
-            - "/usr/local/bin/docker-entrypoint.sh"
-            - "smbd"
-            - "-F"
-
-          env:
-            - name: BASH_ENV
-              value: /vault/secrets/paperless
-            - name: SAMBA_USER
-              value: "paperless"
-            - name: TZ
-              value: "Europe/Berlin"
           ports:
             - containerPort: 445
               protocol: TCP
@@ -60,7 +63,6 @@ spec:
         - name: consume
           persistentVolumeClaim:
             claimName: paperless-ngx-consume
-
 ---
 apiVersion: v1
 kind: Service
