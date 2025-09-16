@@ -79,8 +79,6 @@ spec:
               mountPath: /data
             - name: template
               mountPath: /templates
-            - name: vault-secret
-              mountPath: /vault/secrets
       containers:
         - name: samba
           image: crazymax/samba:latest
@@ -114,8 +112,6 @@ spec:
             items:
               - key: config.yml.tmpl
                 path: config.yml.tmpl
-        - name: vault-secret
-          emptyDir: {}
         - name: samba-shares
           persistentVolumeClaim:
             claimName: paperless-ngx-consume
