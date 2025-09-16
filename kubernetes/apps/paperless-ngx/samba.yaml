@@ -47,7 +47,7 @@ spec:
             runAsUser: 0
           args:
             - "-s"
-            - "consume;/mnt/consume;yes;no;no;1000;1000;1000"
+            - "consume;/mnt/consume;yes;no;no;${SAMBA_USER};${SAMBA_USER};${SAMBA_USER}"
             - "-u"
             - "${SAMBA_USER};${SAMBA_PASSWORD}"
           ports:
