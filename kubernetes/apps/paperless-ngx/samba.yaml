@@ -1,81 +1,124 @@
-apiVersion: secrets-store.csi.x-k8s.io/v1
-kind: SecretProviderClass
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: vault-paperless
+  name: samba-config-template
   namespace: paperless-ngx
-spec:
-  provider: vault
-  parameters:
-    vaultAddress: "https://vault.lan.schwarzkopf.center"
-    roleName: "role-paperless-ngx"
-    objects: |
-      - objectName: "paperless-ngx-samba"
-        objectType: "kv"
-        secretPath: "kv-apps/data/paperless-ngx"
-        keys:
-          - "SAMBA_PASSWORD"
-
+data:
+  config.yml.tmpl: |
+    auth:
+      - user: paperless
+        group: sambagroup
+        uid: 1000
+        gid: 1000
+        password: ${SAMBA_PASSWORD}
+    global:
+      - "server string = Samba Server"
+      - "log level = 1"
+    share:
+      - name: data
+        path: /samba/data
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: paperless
+        writelist: paperless
 ---
-# Deployment mounting the CSI volume and sourcing the mounted secret
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: paperless-ngx-samba
   namespace: paperless-ngx
   labels:
-    app.kubernetes.io/name: paperless-ngx-samba
+    app: paperless-ngx-samba
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: paperless-ngx-samba
+      app: paperless-ngx-samba
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: paperless-ngx-samba
+        app: paperless-ngx-samba
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "role-paperless-ngx"
+        vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
+        vault.hashicorp.com/agent-inject-template-samba: |
+          {{- with secret "kv-apps/data/paperless-ngx" -}}
+          export SAMBA_PASSWORD="{{ .Data.data.SAMBA_PASSWORD }}"
+          {{- end }}
+        vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
+        vault.hashicorp.com/agent-pre-populate: "true"
     spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
         fsGroup: 1000
-      containers:
-        - name: samba
-          image: ghcr.io/servercontainers/samba:latest
+      initContainers:
+        - name: render-config
+          image: alpine:3.18
           command:
             - /bin/sh
             - -c
             - |
-              if [ -f /mnt/secrets-store/SAMBA_PASSWORD ]; then
-                export SAMBA_PASSWORD="$(cat /mnt/secrets-store/SAMBA_PASSWORD)"
+              # install envsubst then render config
+              apk add --no-cache gettext >/dev/null 2>&1 || true
+              # wait for Vault injector to populate the file (guard)
+              n=0
+              until [ -f /vault/secrets/samba ] || [ $n -ge 20 ]; do sleep 0.5; n=$((n+1)); done
+              if [ -f /vault/secrets/samba ]; then
+                . /vault/secrets/samba
               fi
-              export ACCOUNT_paperless="${SAMBA_PASSWORD}"
-              exec /container/scripts/entrypoint.sh
+              if [ -f /templates/config.yml.tmpl ]; then
+                envsubst < /templates/config.yml.tmpl > /data/config.yml
+              else
+                echo "missing template" >&2
+                exit 1
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: template
+              mountPath: /templates
+            - name: vault-secret
+              mountPath: /vault/secrets
+      containers:
+        - name: samba
+          image: crazymax/samba:latest
           env:
+            - name: TZ
+              value: "UTC"
             - name: SAMBA_LOG_LEVEL
               value: "1"
-          securityContext:
-            runAsUser: 0
+            - name: CONFIG_FILE
+              value: "/data/config.yml"
           ports:
             - containerPort: 445
               protocol: TCP
-            - containerPort: 139
-              protocol: TCP
+            - containerPort: 3702
+              protocol: UDP
+            - containerPort: 5355
+              protocol: UDP
+          securityContext:
+            runAsUser: 0
           volumeMounts:
-            - name: consume
-              mountPath: /mnt/consume
-            - name: secrets-store
-              mountPath: /mnt/secrets-store
-              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: samba-shares
+              mountPath: /samba/data
       volumes:
-        - name: consume
+        - name: data
+          emptyDir: {}
+        - name: template
+          configMap:
+            name: samba-config-template
+            items:
+              - key: config.yml.tmpl
+                path: config.yml.tmpl
+        - name: vault-secret
+          emptyDir: {}
+        - name: samba-shares
           persistentVolumeClaim:
             claimName: paperless-ngx-consume
-        - name: secrets-store
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: "vault-paperless"
-
 ---
 apiVersion: v1
 kind: Service
