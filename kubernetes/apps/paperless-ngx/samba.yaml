@@ -24,6 +24,8 @@ spec:
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
         vault.hashicorp.com/agent-pre-populate: "true"
+        vault.hashicorp.com/agent-inject-file-paperless: "pass"
+        vault.hashicorp.com/secret-volume-path-paperless: "/run/secrets"
         vault.hashicorp.com/agent-init-first: "true"
     spec:
       serviceAccountName: paperless-ngx-sa
