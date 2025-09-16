@@ -49,7 +49,7 @@ spec:
               done
               echo "/run/secrets/pass is present"
           volumeMounts:
-            - name: vault-secrets-volume # must match the secret-projection volume name created by the injector
+            - name: vault-secrets # <- correct name created by Vault Agent
               mountPath: /run/secrets
       containers:
         - name: samba
@@ -67,6 +67,9 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /storage
+            - name: vault-secrets
+              mountPath: /run/secrets
+              readOnly: true
       volumes:
         - name: consume
           persistentVolumeClaim:
