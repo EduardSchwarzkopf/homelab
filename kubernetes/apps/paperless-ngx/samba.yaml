@@ -37,8 +37,6 @@ spec:
           env:
             - name: BASH_ENV
               value: /vault/secrets/paperless
-            - name: SAMBA_PASSWORD
-              value: "${SAMBA_PASSWORD}"
             - name: SAMBA_USER
               value: "paperless"
             - name: TZ
