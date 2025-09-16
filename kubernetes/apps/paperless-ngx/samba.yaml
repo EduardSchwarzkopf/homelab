@@ -31,7 +31,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: samba
-          image: dockurr/samba:latest
+          image: dockurr/samba:4.21.6
           command:
             - /bin/bash
             - -c
