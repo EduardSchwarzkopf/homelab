@@ -1,3 +1,16 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata: { name: paperless-ngx-secret, namespace: paperless-ngx }
+spec:
+  provider:
+    vault:
+      server: "https://vault.lan.schwarzkopf.center"
+      path: "kv-apps/data/paperless-ngx"
+  refreshInterval: 1m
+  target:
+    name: paperless-ngx-k8s-secret
+    creationPolicy: Owner
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,18 +27,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: paperless-ngx-samba
-      annotations:
-        vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/role: "role-paperless-ngx"
-        vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
-        vault.hashicorp.com/agent-inject-template-paperless: |
-          {{- with secret "kv-apps/data/paperless-ngx" -}}
-          export SAMBA_PASSWORD="{{ .Data.data.SAMBA_PASSWORD }}"
-          {{- end }}
-        vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
-        vault.hashicorp.com/agent-pre-populate: "true"
-        vault.hashicorp.com/agent-inject-file-paperless: "smb"
-        vault.hashicorp.com/secret-volume-path-paperless: "/vault/secrets"
     spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
@@ -33,15 +34,14 @@ spec:
       containers:
         - name: samba
           image: ghcr.io/servercontainers/samba:latest
-          command:
-            [
-              "/bin/sh",
-              "-c",
-              "if [ -f /vault/secrets/smb ]; then . /vault/secrets/smb; fi; exec /container/scripts/entrypoint.sh",
-            ]
           env:
             - name: SAMBA_LOG_LEVEL
               value: "1"
+            - name: ACCOUNT_paperless
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-ngx-k8s-secret
+                  key: SAMBA_PASSWORD
             - name: SAMBA_VOLUME_CONFIG_CONSUME
               value: |
                 [PAPERLESS_CONSUME]
