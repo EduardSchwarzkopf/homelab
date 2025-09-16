@@ -51,9 +51,6 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /mnt/consume
-            - name: vault-secrets
-              mountPath: /vault/secrets
-              readOnly: true
       volumes:
         - name: consume
           persistentVolumeClaim:
