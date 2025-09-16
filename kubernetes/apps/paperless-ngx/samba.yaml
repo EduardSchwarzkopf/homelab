@@ -24,33 +24,13 @@ spec:
           {{- end }}
         vault.hashicorp.com/agent-inject-file-pass: "pass"
         vault.hashicorp.com/secret-volume-path-pass: "/run/secrets"
+        vault.hashicorp.com/agent-inject-perms-pass: "0644"
         vault.hashicorp.com/agent-pre-populate: "true"
         vault.hashicorp.com/agent-init-first: "true"
     spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
         fsGroup: 1000
-      initContainers:
-        - name: wait-for-pass
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              timeout=60
-              i=0
-              until [ -s /run/secrets/pass ]; do
-                i=$((i+1))
-                if [ "$i" -ge "$timeout" ]; then
-                  echo "timed out waiting for /run/secrets/pass" >&2
-                  exit 1
-                fi
-                sleep 0.5
-              done
-              echo "/run/secrets/pass is present"
-          volumeMounts:
-            - name: vault-secrets
-              mountPath: /run/secrets
       containers:
         - name: samba
           image: dockurr/samba:4.21.6
@@ -67,9 +47,6 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /storage
-            - name: vault-secrets
-              mountPath: /run/secrets
-              readOnly: true
       volumes:
         - name: consume
           persistentVolumeClaim:
