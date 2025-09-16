@@ -41,9 +41,9 @@ spec:
             - /bin/bash
             - -c
             - |
-              if [ -f /vault/secrets/smb ]; then
-                . /vault/secrets/smb
-              fi
+
+              source /vault/secrets/smb
+              echo "password is: ${SAMBA_PASSWORD}"
               export PASS="${SAMBA_PASSWORD:-$PASS}"
               exec /usr/bin/samba.sh
           env:
