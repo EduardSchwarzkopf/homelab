@@ -42,7 +42,7 @@ spec:
             - name: USER
               value: paperless
             - name: PASS
-              value: "${SAMBA_PASSWORD}"
+              value: ${SAMBA_PASSWORD}
           ports:
             - containerPort: 445
               protocol: TCP
