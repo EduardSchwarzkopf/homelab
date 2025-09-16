@@ -45,7 +45,7 @@ spec:
                 path = /mnt/consume
                 read only = no
                 guest ok = no
-                valid users = ${SAMBA_USER}
+                valid users = paperless
           securityContext:
             runAsUser: 0
           ports:
