@@ -36,7 +36,7 @@ spec:
             - /bin/bash
             - -c
             - |
-              cat /vault/secrets/smb > /run/secrets/pass
+              cat /vault/secrets/paperless > /run/secrets/pass
               exec /usr/bin/samba.sh
           env:
             - name: NAME
