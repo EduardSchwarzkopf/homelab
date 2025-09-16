@@ -40,12 +40,13 @@ spec:
               value: "1"
             - name: ACCOUNT_paperless
               value: "${SAMBA_PASSWORD}"
-            - name: SAMBA_CONF_SHARE_CONSUME
+            - name: SAMBA_VOLUME_CONFIG_CONSUME
               value: |
-                path = /mnt/consume
-                read only = no
-                guest ok = no
-                valid users = paperless
+                [PAPERLESS_CONSUME]
+                  path = /mnt/consume
+                  read only = no
+                  guest ok = no
+                  valid users = paperless
           securityContext:
             runAsUser: 0
           ports:
