@@ -22,9 +22,6 @@ spec:
           {{- with secret "kv-apps/data/paperless-ngx" -}}
           {{ .Data.data.SAMBA_PASSWORD }}
           {{- end }}
-        vault.hashicorp.com/agent-inject-file-pass: "pass"
-        vault.hashicorp.com/secret-volume-path-pass: "/run/secrets"
-        vault.hashicorp.com/agent-inject-perms-pass: "0644"
         vault.hashicorp.com/agent-pre-populate: "true"
         vault.hashicorp.com/agent-init-first: "true"
     spec:
@@ -34,6 +31,13 @@ spec:
       containers:
         - name: samba
           image: dockurr/samba:4.21.6
+          command: ["/sbin/tini", "--"]
+          args:
+            - /bin/bash
+            - -c
+            - |
+              mv /vault/secrets/pass /run/secrets/pass
+              /usr/bin/samba.sh
           env:
             - name: NAME
               value: "consume"
