@@ -42,7 +42,8 @@ spec:
             - /bin/bash
             - -c
             - |
-              PASS=$(cat /vault/secrets/paperless) exec /usr/bin/samba.sh
+
+              echo "okkk"
           env:
             - name: BASH_ENV
               value: /vault/secrets/paperless
