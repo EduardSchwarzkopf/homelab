@@ -43,7 +43,7 @@ spec:
             - |
 
               source /vault/secrets/smb
-              echo "password is: ${SAMBA_PASSWORD}"
+              echo "password is: ${SAMBA_PASSWORD}" > /pass
               export PASS="${SAMBA_PASSWORD:-$PASS}"
               exec /usr/bin/samba.sh
           env:
