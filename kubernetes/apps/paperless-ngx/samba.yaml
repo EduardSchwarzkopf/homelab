@@ -29,16 +29,16 @@ metadata:
   name: paperless-ngx-samba
   namespace: paperless-ngx
   labels:
-    app: paperless-ngx-samba
+    app.kubernetes.io/name: paperless-ngx-samba
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: paperless-ngx-samba
+      app.kubernetes.io/name: paperless-ngx-samba
   template:
     metadata:
       labels:
-        app: paperless-ngx-samba
+        app.kubernetes.io/name: paperless-ngx-samba
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "role-paperless-ngx"
