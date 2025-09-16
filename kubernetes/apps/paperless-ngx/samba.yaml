@@ -37,12 +37,19 @@ spec:
           env:
             - name: BASH_ENV
               value: /vault/secrets/smb
+            - name: USERID
+              value: "1000"
+            - name: GROUPID
+              value: "1000"
+            - name: PERMISSIONS
+              value: "1"
           securityContext:
             runAsUser: 0
           args:
-            - '-s "consume;/mnt/consume;yes;no;no;${SAMBA_USER};${SAMBA_USER};${SAMBA_USER}"'
-            - '-u "${SAMBA_USER};${SAMBA_PASSWORD}"'
-            - "-p"
+            - "-s"
+            - "consume;/mnt/consume;yes;no;no;1000;1000;1000"
+            - "-u"
+            - "${SAMBA_USER};${SAMBA_PASSWORD}"
           ports:
             - containerPort: 445
               protocol: TCP
