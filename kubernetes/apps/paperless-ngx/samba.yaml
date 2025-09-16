@@ -20,10 +20,13 @@ spec:
         vault.hashicorp.com/agent-inject-secret-paperless: "kv-apps/data/paperless-ngx"
         vault.hashicorp.com/agent-inject-template-paperless: |
           {{- with secret "kv-apps/data/paperless-ngx" -}}
-          PASS="{{ .Data.data.SAMBA_PASSWORD }}"
+          {{ .Data.data.SAMBA_PASSWORD }}
           {{- end }}
         vault.hashicorp.com/agent-inject-vault-address: "https://vault.lan.schwarzkopf.center"
         vault.hashicorp.com/agent-pre-populate: "true"
+        vault.hashicorp.com/agent-inject-file-paperless: "pass"
+        vault.hashicorp.com/secret-volume-path-paperless: "/run/secrets"
+        vault.hashicorp.com/agent-init-first: "true"
     spec:
       serviceAccountName: paperless-ngx-sa
       securityContext:
@@ -31,14 +34,7 @@ spec:
       containers:
         - name: samba
           image: dockurr/samba:latest
-          command:
-            - /bin/bash
-            - -c
-            - |
-              exec /usr/bin/samba.sh
           env:
-            - name: BASH_ENV
-              value: /vault/secrets/smb
             - name: NAME
               value: "consume"
             - name: USER
