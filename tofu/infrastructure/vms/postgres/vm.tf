@@ -1,101 +1,57 @@
-resource "proxmox_virtual_environment_vm" "postgres_data_vm" {
-  node_name = var.proxmox_node_name
-  started   = false
-  on_boot   = false
-  name      = "${local.vm_name}-data-vm"
-  tags      = ["ubuntu", "data-vm", "postgres", "prod", "do-not-start"]
+module "server" {
+  source = "../modules/server"
+
+  proxmox_node_name    = var.proxmox_node_name
+  vm_id                = 5432
+  vm_name              = local.vm_name
+  role                 = "Postgres database server"
+  environment          = "prod"
+  tags                 = ["ubuntu", "database", "postgres", "prod"]
+  clone_vm_id          = 100
+  cpu_cores            = 4
+  memory_gb            = 16
+  os_disk_datastore_id = "vm-os-pool"
+  os_disk_size         = 50
 
 
-  disk {
-    datastore_id = "zfs-longhorn"
-    interface    = "scsi0"
-    size         = 20
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "proxmox_virtual_environment_vm" "postgres_vm" {
-  node_name = var.proxmox_node_name
-  vm_id     = 5432
-  name      = local.vm_name
-
-  tags = ["ubuntu", "database", "postgres", "prod"]
-
-  clone {
-    vm_id     = 100
-    node_name = var.proxmox_node_name
-  }
-
-  cpu {
-    cores = 4
-    type  = "x86-64-v2-AES"
-  }
-
-  memory {
-    dedicated = 1024 * 16
-  }
-
-  # Boot disk
-  disk {
-    datastore_id = "vm-os-pool"
-    interface    = "scsi0"
-    size         = 50
-  }
-
-  dynamic "disk" {
-    for_each = { for idx, val in proxmox_virtual_environment_vm.postgres_data_vm.disk : idx => val }
-    iterator = data_disk
-    content {
-      datastore_id      = data_disk.value["datastore_id"]
-      path_in_datastore = data_disk.value["path_in_datastore"]
-      file_format       = data_disk.value["file_format"]
-      size              = data_disk.value["size"]
-      interface         = "scsi${data_disk.key + 1}"
-    }
-  }
-
-  agent {
-    enabled = true
-  }
-
-  network_device {
-    bridge = "vmbr0"
-  }
-
-  initialization {
-    ip_config {
-      ipv4 {
-        address = "dhcp"
+  cloud_init = {
+    hostname = local.vm_name
+    packages = [
+      "apt-transport-https",
+      "ca-certificates",
+      "curl",
+      "gnupg",
+      "software-properties-common"
+    ]
+    write_files = [
+      {
+        path = "/home/ubuntu/docker-compose.yml"
+        content = templatefile("${path.module}/templates/docker-compose.tpl.yaml", {
+          POSTGRES_USER            = local.postgres_user
+          POSTGRES_PASSWORD        = var.postgres_password
+          POSTGRES_PORT            = local.postgres_port
+          PGADMIN_DEFAULT_PASSWORD = var.pgadmin_password
+          PGADMIN_DEFAULT_EMAIL    = var.pgadmin_email
+          POSTGRES_DATA_PATH       = local.postgres_data_path
+          PGADMIN_DATA_PATH        = local.pgadmin_data_path
+        })
+        owner       = "ubuntu:ubuntu"
+        permissions = "0644"
+        defer       = false
       }
-    }
-
-    user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
-    meta_data_file_id = proxmox_virtual_environment_file.cloud_metadata.id
+    ]
+    bootstrap_script = templatefile("${path.module}/templates/bootstrap.tpl.sh", {
+      MOUNT_PATH        = local.mount_path
+      PGADMIN_DATA_PATH = local.pgadmin_data_path
+    })
+    data_disk_enabled = true
   }
 
-  lifecycle {
-    replace_triggered_by = [proxmox_virtual_environment_file.cloud_config]
+  data_disk = {
+    datastore_id      = proxmox_virtual_environment_vm.postgres_data_vm.disk[0].datastore_id
+    size              = proxmox_virtual_environment_vm.postgres_data_vm.disk[0].size
+    file_format       = try(proxmox_virtual_environment_vm.postgres_data_vm.disk[0].file_format, null)
+    path_in_datastore = try(proxmox_virtual_environment_vm.postgres_data_vm.disk[0].path_in_datastore, null)
+    mount_path        = local.mount_path
   }
-}
-
-
-resource "tls_private_key" "ubuntu_vm_key" {
-  algorithm = "RSA"
-  rsa_bits  = 2048
-}
-
-output "ubuntu_vm_private_key" {
-  value     = tls_private_key.ubuntu_vm_key.private_key_pem
-  sensitive = true
-}
-
-resource "local_file" "key" {
-  filename = "keys/${local.vm_name}.key"
-  content  = tls_private_key.ubuntu_vm_key.private_key_pem
-
-  file_permission = 600
-
 }

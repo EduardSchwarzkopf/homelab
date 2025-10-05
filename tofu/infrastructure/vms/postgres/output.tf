@@ -11,5 +11,5 @@ output "postgres_port" {
 }
 
 output "id" {
-  value = proxmox_virtual_environment_vm.postgres_vm.id
+  value = module.server.vm_id
 }
