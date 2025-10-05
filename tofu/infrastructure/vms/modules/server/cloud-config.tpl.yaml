@@ -1,0 +1,54 @@
+#cloud-config
+
+hostname: ${hostname}
+create_hostname_file: true
+ssh_pwauth: false
+
+package_update: true
+package_upgrade: true
+
+ssh_authorized_keys:
+%{ for key in ssh_authorized_keys ~}
+  - ${key}
+%{ endfor ~}
+
+%{ if mount_path != null }
+device_aliases:
+  data_disk: /dev/sdb
+
+disk_setup:
+  data_disk:
+    table_type: gpt
+    layout: true
+    overwrite: false
+
+fs_setup:
+  - label: data
+    filesystem: ext4
+    device: data_disk
+    partition: auto
+    overwrite: false
+
+mounts:
+  - [data_disk.1, ${mount_path}, auto, "defaults,nofail", "0", "2"]
+%{ endif }
+
+packages:
+%{ for pkg in packages ~}
+  - ${pkg}
+%{ endfor ~}
+
+write_files:
+%{ for file in write_files ~}
+  - path: ${file.path}
+%{ if file.owner != null }    owner: ${file.owner}%{ endif }
+%{ if file.permissions != null }    permissions: "${file.permissions}"%{ endif }
+%{ if file.encoding != null }    encoding: ${file.encoding}%{ endif }
+%{ if file.defer != null }    defer: ${file.defer}%{ endif }
+    content: >
+      ${indent(6, trimspace(file.content))}
+%{ endfor ~}
+
+runcmd:
+  - >
+    ${indent(4, trimspace(bootstrap_script))}
