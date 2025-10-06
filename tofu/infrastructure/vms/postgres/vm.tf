@@ -44,7 +44,6 @@ module "server" {
       MOUNT_PATH        = local.mount_path
       PGADMIN_DATA_PATH = local.pgadmin_data_path
     })
-    data_disk_enabled = true
   }
 
   data_disk = {
