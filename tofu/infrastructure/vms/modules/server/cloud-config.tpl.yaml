@@ -14,7 +14,7 @@ ssh_authorized_keys:
 
 %{ if mount_path != null }
 device_aliases:
-  data_disk: /dev/sdb
+  data_disk: "scsi1"
 
 disk_setup:
   data_disk:
@@ -30,7 +30,7 @@ fs_setup:
     overwrite: false
 
 mounts:
-  - [data_disk.1, ${mount_path}, auto, "defaults,nofail", "0", "2"]
+  - [LABEL=data, ${mount_path}, auto, "defaults,nofail", "0", "2"]
 %{ endif }
 
 packages:
@@ -39,6 +39,55 @@ packages:
 %{ endfor ~}
 
 write_files:
+  - path: /root/cloud-init/bootstrap.sh
+    permissions: 0400
+    owner: root
+    content: |
+      #!/bin/bash
+      ${indent(6, trimspace(bootstrap_script))}
+  - path: /root/cloud-init/resize.sh
+    permissions: "0500"
+    owner: root
+    content: |
+      #!/bin/bash
+      set -e
+
+      # Wait for the disk to settle
+      sleep 5
+
+      VG_NAME="ubuntu-vg"
+      LV_NAME="ubuntu-lv"
+      DEV="/dev/sda"
+      PART_NUM=3
+      PART="$${DEV}$${PART_NUM}"
+
+      # Check free space in VG
+      FREE_PE=$(vgdisplay $VG_NAME | awk '/Free  PE/ {print $3}')
+      if [ -z "$FREE_PE" ] || [ "$FREE_PE" -eq 0 ]; then
+        exit 0
+      fi
+
+      # Ensure kernel rescans partition table
+      partprobe $DEV || true
+
+      # Grow the partition
+      growpart $DEV $PART_NUM
+
+      # Resize PV
+      pvresize $PART
+
+      # Extend LV to use all free
+      lvextend -l +100%FREE /dev/$VG_NAME/$LV_NAME
+
+      # Resize filesystem
+      # Detect fs type
+      FSTYPE=$(lsblk -no FSTYPE /dev/$VG_NAME/$LV_NAME)
+      if [ "$FSTYPE" = "xfs" ]; then
+        xfs_growfs /
+      else
+        resize2fs /dev/$VG_NAME/$LV_NAME
+      fi
+
 %{ for file in write_files ~}
   - path: ${file.path}
 %{ if file.owner != null }    owner: ${file.owner}%{ endif }
@@ -50,5 +99,6 @@ write_files:
 %{ endfor ~}
 
 runcmd:
-  - >
-    ${indent(4, trimspace(bootstrap_script))}
+  - bash /root/cloud-init/resize.sh
+  - bash /root/cloud-init/bootstrap.sh
+  - rm -rf /root/cloud-init
