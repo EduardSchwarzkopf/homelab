@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_vm" "data_disk_vm" {
-  name      = "${consumer_vm_name}-data-vm"
+  name      = "${var.consumer_vm_name}-data-vm"
   node_name = var.node_name
   started   = false
   on_boot   = false
