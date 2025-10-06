@@ -61,15 +61,15 @@ variable "os_disk_size" {
 variable "cloud_init" {
   description = "Cloud-init configuration object"
   type = object({
-    packages = list(string)
-    write_files = list(object({
+    packages = optional(list(string), [])
+    write_files = optional(list(object({
       path        = string
       content     = string
       owner       = string
       permissions = string
       encoding    = optional(string)
       defer       = optional(bool, false)
-    }))
+    })), [])
     bootstrap_script = string
   })
 }
