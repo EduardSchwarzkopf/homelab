@@ -16,6 +16,11 @@ This repository automates the provisioning of virtual machines, Kubernetes clust
 
 The project is designed for flexibility, modularity, and maintainability, making it easy to extend or adapt to my homelab needs.
 
+
+### Architecture
+
+![Architecture](docs/img/homelab.drawio.svg)
+
 ---
 
 ## Prerequisites
