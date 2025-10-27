@@ -1,10 +1,10 @@
 variable "os" {
   type        = string
-  description = "Either \"talos\" or \"ubuntu\""
+  description = "Either \"talos\", \"debian\" or \"ubuntu\""
 
   validation {
-    condition     = contains(["talos", "ubuntu"], var.os)
-    error_message = "The \"os\" variable must be either \"talos\" or \"ubuntu\"."
+    condition     = contains(["talos", "ubuntu", "debian"], var.os)
+    error_message = "The \"os\" variable must be either \"talos\", \"debian\" or \"ubuntu\"."
   }
 }
 
