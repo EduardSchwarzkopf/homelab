@@ -40,6 +40,25 @@ EOF
       ssh_password = "ubuntu"
       env          = {}
     }
+    debian = {
+      iso_file = "debian-${var.os_version}-amd64-netinst.iso"
+      iso_checksums = {
+        "13.1.0" = "sha256:658b28e209b578fe788ec5867deebae57b6aac5fce3692bbb116bab9c65568b3"
+      }
+      boot_command = [
+        "<tab>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "auto=true ",
+        "priority=critical ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        "<wait><enter>"
+      ]
+
+      ssh_username = "root"
+      ssh_password = "packer"
+      env          = {}
+    }
+
     talos = {
       iso_file = "archlinux-2025.07.01-x86_64.iso"
       iso_checksums = {
