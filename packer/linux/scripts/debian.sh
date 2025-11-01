@@ -77,4 +77,8 @@ sudo rm -rf /tmp/cleanup.sh
 echo '> Disable systemd-networkd-wait-online'
 sudo systemctl disable systemd-networkd-wait-online.service
 
+echo '> Disable root'
+sudo passwd -d root
+sudo passwd -l root
+
 echo '> Done.'  
