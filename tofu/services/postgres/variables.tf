@@ -17,8 +17,3 @@ variable "paperless_db_password" {
   type      = string
   sensitive = true
 }
-
-variable "artifactory_db_password" {
-  type      = string
-  sensitive = true
-}
