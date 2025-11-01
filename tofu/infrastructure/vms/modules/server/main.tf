@@ -1,3 +1,4 @@
+
 resource "tls_private_key" "vm_key" {
   algorithm = "RSA"
   rsa_bits  = 2048
@@ -9,41 +10,6 @@ resource "local_file" "key" {
   file_permission = 600
 }
 
-resource "terraform_data" "cloud_config" {
-  input = templatefile("${path.module}/cloud-config.tpl.yaml", {
-    hostname            = var.vm_name
-    ssh_authorized_keys = [trimspace(tls_private_key.vm_key.public_key_openssh)]
-    packages            = var.cloud_init.packages
-    write_files         = var.cloud_init.write_files
-    bootstrap_script    = var.cloud_init.bootstrap_script
-    mount_path          = var.data_disk.mount_path
-  })
-}
-
-resource "proxmox_virtual_environment_file" "cloud_config" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = var.proxmox_node_name
-
-  source_raw {
-    data      = terraform_data.cloud_config.output
-    file_name = "${var.vm_name}.cloud-config.yaml"
-  }
-}
-
-resource "proxmox_virtual_environment_file" "cloud_metadata" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = var.proxmox_node_name
-
-  source_raw {
-    data      = <<-EOF
-    #cloud-config
-    local-hostname: ${var.vm_name}
-    EOF
-    file_name = "${var.vm_name}.meta-data.yaml"
-  }
-}
 
 resource "proxmox_virtual_environment_vm" "vm" {
   node_name = var.proxmox_node_name
@@ -52,9 +18,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   description = <<-EOF
   Role:        ${var.role}
-  Name:        ${var.vm_name}
+
   Environment: ${var.environment}
+
   Deployed:    ${timestamp()}
+
   Notes:       Managed by Terraform. Do not edit in UI.
 EOF
 
@@ -80,12 +48,15 @@ EOF
     size         = var.os_disk_size
   }
 
-  disk {
-    datastore_id      = var.data_disk.datastore_id
-    path_in_datastore = var.data_disk.path_in_datastore
-    file_format       = var.data_disk.file_format
-    size              = var.data_disk.size
-    interface         = "scsi1"
+  dynamic "disk" {
+    for_each = var.additional_disks
+    content {
+      datastore_id      = disk.value.datastore_id
+      path_in_datastore = disk.value.path_in_datastore
+      file_format       = disk.value.file_format
+      size              = disk.value.size
+      interface         = "scsi${1 + disk.key}"
+    }
   }
 
   agent {
@@ -107,7 +78,7 @@ EOF
   }
 
   lifecycle {
-    replace_triggered_by = [terraform_data.cloud_config]
+    replace_triggered_by = [terraform_data.cloud_config, terraform_data.additional_disks_trigger]
   }
 
 }

@@ -57,11 +57,11 @@ module "server" {
     ]
   }
 
-  data_disk = {
+  additional_disks = [{
     datastore_id      = module.data_vm.datastore_id
-    size              = local.data_disk_size
+    size              = module.data_vm.size
     file_format       = module.data_vm.file_format
     path_in_datastore = module.data_vm.path_in_datastore
     mount_path        = local.mount_path
-  }
+  }]
 }

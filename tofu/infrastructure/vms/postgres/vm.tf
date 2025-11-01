@@ -46,11 +46,11 @@ module "server" {
     })
   }
 
-  data_disk = {
-    datastore_id      = proxmox_virtual_environment_vm.postgres_data_vm.disk[0].datastore_id
-    size              = proxmox_virtual_environment_vm.postgres_data_vm.disk[0].size
-    file_format       = try(proxmox_virtual_environment_vm.postgres_data_vm.disk[0].file_format, null)
-    path_in_datastore = try(proxmox_virtual_environment_vm.postgres_data_vm.disk[0].path_in_datastore, null)
+  additional_disks = [{
+    datastore_id      = module.data_vm.datastore_id
+    size              = module.data_vm.size
+    file_format       = module.data_vm.file_format
+    path_in_datastore = module.data_vm.path_in_datastore
     mount_path        = local.mount_path
-  }
+  }]
 }
