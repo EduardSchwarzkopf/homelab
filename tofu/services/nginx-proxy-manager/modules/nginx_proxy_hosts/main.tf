@@ -9,7 +9,7 @@ resource "nginxproxymanager_proxy_host" "host" {
 
   caching_enabled         = true
   allow_websocket_upgrade = true
-  block_exploits          = true
+  block_exploits          = each.value.block_exploits
 
   ssl_forced      = true
   hsts_enabled    = true

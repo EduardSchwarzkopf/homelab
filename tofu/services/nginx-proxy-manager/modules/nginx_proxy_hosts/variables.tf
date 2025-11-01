@@ -5,6 +5,7 @@ variable "proxy_hosts" {
     forward_scheme = string
     forward_host   = string
     forward_port   = number
+    block_exploits = optional(bool, true)
   }))
 }
 
