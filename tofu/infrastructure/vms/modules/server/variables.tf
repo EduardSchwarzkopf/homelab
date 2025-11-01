@@ -73,23 +73,16 @@ variable "cloud_init" {
     bootstrap_script = string
   })
 }
-
-variable "data_disk" {
-  description = "Single data disk configuration for the VM"
-  type = object({
+variable "additional_disks" {
+  description = "List of additional disks to attach to the VM"
+  type = list(object({
     datastore_id      = string
     size              = number
-    file_format       = optional(string)
-    path_in_datastore = optional(string)
+    file_format       = optional(string, "raw")
+    path_in_datastore = string
     mount_path        = string
-  })
-  default = {
-    datastore_id      = null
-    size              = null
-    file_format       = null
-    path_in_datastore = null
-    mount_path        = null
-  }
+  }))
+  default = []
 }
 
 variable "cloud_config_debug" {

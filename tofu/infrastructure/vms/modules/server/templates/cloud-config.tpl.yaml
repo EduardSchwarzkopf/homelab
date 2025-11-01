@@ -1,0 +1,57 @@
+#cloud-config
+
+hostname: ${hostname}
+create_hostname_file: true
+ssh_pwauth: false
+disable_root: true
+
+
+package_update: true
+package_upgrade: true
+
+ssh_authorized_keys:
+%{ for key in ssh_authorized_keys ~}
+  - ${key}
+%{ endfor ~}
+
+packages:
+  - parted
+%{ for pkg in packages ~}
+  - ${pkg}
+%{ endfor ~}
+
+write_files:
+  - path: /root/cloud-init/bootstrap.sh
+    permissions: "0400"
+    owner: root
+    content: |
+      #!/bin/bash
+      ${indent(6, trimspace(bootstrap_script))}
+  - path: /root/cloud-init/mount_additional_disks.sh
+    permissions: "500"
+    owner: root
+    content: |
+      ${indent(6, trimspace(mount_additional_disks_script))}
+  - path: /root/cloud-init/resize.sh
+    permissions: "0500"
+    owner: root
+    content: |
+      ${indent(6, trimspace(resize_root_script))}
+
+%{ for file in write_files ~}
+  - path: ${file.path}
+%{ if file.owner != null }    owner: ${file.owner}%{ endif }
+%{ if file.permissions != null }    permissions: "${file.permissions}"%{ endif }
+%{ if file.encoding != null }    encoding: ${file.encoding}%{ endif }
+%{ if file.defer != null }    defer: ${file.defer}%{ endif }
+    content: >
+      ${indent(6, trimspace(file.content))}
+%{ endfor ~}
+
+runcmd:
+  - bash /root/cloud-init/resize.sh
+%{ if length(additional_mounts) > 0 ~}
+  - bash /root/cloud-init/mount_additional_disks.sh %{ for m in additional_mounts ~} ${m.scsi_number} ${m.mount_path} %{ endfor ~}
+%{ endif }
+  - bash /root/cloud-init/bootstrap.sh
+  - rm -rf /root/cloud-init
