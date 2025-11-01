@@ -1,6 +1,8 @@
 configVersion: 1
 
 shared:
+  script:
+    serviceStartTimeout: 600
   node:
     id: "node1"
     haEnabled: false
@@ -12,3 +14,6 @@ shared:
     url: "jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DATABASE}"
     username: "${POSTGRES_USERNAME}"
     password: "${POSTGRES_PASSWORD}"
+
+jfconnect:
+  enabled: false

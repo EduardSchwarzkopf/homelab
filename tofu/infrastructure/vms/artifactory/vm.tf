@@ -21,7 +21,6 @@ module "server" {
       TEMP_SYSTEM_YAML_FILEPATH = local.temp_system_yaml_filepath
       TEMP_BINARYSTORE_FILEPATH = local.temp_binarystore_filepath
       APPLICATION_DATA_DIR      = local.application_data_dir
-      APPLICATION_CONFIG_DIR    = local.application_config_dir
     })
 
     write_files = [
@@ -37,7 +36,7 @@ module "server" {
       {
         path        = local.master_key_filepath
         content     = random_bytes.master_key.hex
-        owner       = "root"
+        owner       = "artifactory:artifactory"
         permissions = "0600"
         defer       = true
       },
