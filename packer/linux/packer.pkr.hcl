@@ -141,7 +141,7 @@ source "proxmox-iso" "vm" {
   ssh_username = local.cfg.ssh_username
   ssh_password = local.cfg.ssh_password
   communicator = "ssh"
-  ssh_timeout  = "15m"
+  ssh_timeout  = "30m"
 }
 
 build {
