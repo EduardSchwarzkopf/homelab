@@ -13,8 +13,19 @@ variable "size" {
   type        = number
 }
 
+variable "pool_id" {
+  description = "Which pool should be the data VM be placed."
+  default     = "data-vms"
+}
+
 variable "additional_tags" {
   description = "Additional tags to add to the data disk VM"
   type        = list(string)
   default     = []
+}
+
+variable "datastore_id" {
+  description = "The datastore to place the disk onto"
+  type        = string
+  default     = "zfs-longhorn"
 }
