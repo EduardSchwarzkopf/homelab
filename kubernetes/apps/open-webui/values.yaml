@@ -1,0 +1,11 @@
+ollama:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+ollamaUrls:
+  - "http://ollama:11434"
+
+persistence:
+  storageClass: "longhorn"
