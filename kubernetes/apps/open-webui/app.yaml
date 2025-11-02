@@ -1,0 +1,122 @@
+---
+# Source: open-webui/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: existing-sa
+  namespace: open-webui
+  labels:
+    helm.sh/chart: open-webui-8.12.2
+    app.kubernetes.io/version: "0.6.34"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: open-webui
+    app.kubernetes.io/instance: openwebui
+    app.kubernetes.io/component: open-webui
+automountServiceAccountToken: false
+---
+# Source: open-webui/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui
+  namespace: open-webui
+  labels:
+    app.kubernetes.io/instance: openwebui
+    app.kubernetes.io/component: open-webui
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: longhorn
+---
+# Source: open-webui/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui
+  namespace: open-webui
+  labels:
+    helm.sh/chart: open-webui-8.12.2
+    app.kubernetes.io/version: "0.6.34"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: open-webui
+    app.kubernetes.io/instance: openwebui
+    app.kubernetes.io/component: open-webui
+spec:
+  selector:
+    app.kubernetes.io/instance: openwebui
+    app.kubernetes.io/component: open-webui
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+      targetPort: http
+---
+# Source: open-webui/templates/workload-manager.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: open-webui
+  namespace: open-webui
+  labels:
+    helm.sh/chart: open-webui-8.12.2
+    app.kubernetes.io/version: "0.6.34"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: open-webui
+    app.kubernetes.io/instance: openwebui
+    app.kubernetes.io/component: open-webui
+
+spec:
+  replicas: 1
+  serviceName: open-webui
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: openwebui
+      app.kubernetes.io/component: open-webui
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: open-webui-8.12.2
+        app.kubernetes.io/version: "0.6.34"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: open-webui
+        app.kubernetes.io/instance: openwebui
+        app.kubernetes.io/component: open-webui
+    spec:
+      initContainers:
+        - name: copy-app-data
+          image: ghcr.io/open-webui/open-webui:0.6.34
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - cp -R -n /app/backend/data/* /tmp/app-data/
+          volumeMounts:
+            - name: data
+              mountPath: /tmp/app-data
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      serviceAccountName: existing-sa
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:0.6.34
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /app/backend/data
+          env:
+            - name: WEBUI_URL
+              value: "https://assistant.lan.schwarzkopf.center"
+            - name: "OLLAMA_BASE_URLS"
+              value: "http://ollama.lan:11434"
+          tty: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: open-webui
