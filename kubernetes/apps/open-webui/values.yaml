@@ -8,4 +8,8 @@ ollamaUrls:
   - "http://ollama:11434"
 
 persistence:
-  storageClass: "longhorn"
+  enabled: true
+  storageClass: longhorn
+  accessMode: ReadWriteOnce
+  size: 20Gi
+  retain: true
