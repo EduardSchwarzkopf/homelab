@@ -13,9 +13,14 @@ variable "size" {
   type        = number
 }
 
-variable "pool_id" {
-  description = "Which pool should be the data VM be placed."
-  default     = "data-vms"
+variable "backup_tier" {
+  description = "Backup tier for this data disk. Options: 0 (No Backup), 1 (Critical), 2 (Standard), 3 (Development), 4 (Cache)"
+  type        = number
+
+  validation {
+    condition     = contains([0, 1, 2, 3, 4], var.backup_tier)
+    error_message = "backup_tier must be one of: 0 (No Backup),  1 (Critical), 2 (Standard), 3 (Development), 4 (Cache)"
+  }
 }
 
 variable "additional_tags" {

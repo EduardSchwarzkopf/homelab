@@ -3,4 +3,5 @@ module "data_vm" {
   consumer_vm_name = local.vm_name
   node_name        = var.proxmox_node_name
   size             = 20
+  backup_tier      = 1
 }
