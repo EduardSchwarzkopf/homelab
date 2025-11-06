@@ -90,3 +90,9 @@ variable "cloud_config_debug" {
   type        = bool
   default     = false
 }
+
+variable "use_gpu" {
+  description = "If true, this server will use the hosts GPU. Only possible for 1 VM"
+  type        = bool
+  default     = false
+}

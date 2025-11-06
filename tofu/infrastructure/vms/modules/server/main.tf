@@ -81,6 +81,14 @@ EOF
     replace_triggered_by = [terraform_data.cloud_config, terraform_data.additional_disks_trigger]
   }
 
+  dynamic "hostpci" {
+    for_each = var.use_gpu ? [1] : []
+    content {
+      device  = "hostpci0"
+      mapping = "gpu-gtx1060"
+      xvga    = true
+    }
+  }
 }
 
 resource "local_file" "debug_cloud_config" {
