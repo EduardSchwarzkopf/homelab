@@ -1,7 +1,7 @@
 
 
 resource "nginxproxymanager_certificate_letsencrypt" "lan_schwarzkopf_center" {
-  domain_names = ["*.lan.schwarzkopf.center"]
+  domain_names = ["*.${local.lan_domain}"]
 
   letsencrypt_email   = "eduard@schwarzkopf.center"
   letsencrypt_agree   = true
