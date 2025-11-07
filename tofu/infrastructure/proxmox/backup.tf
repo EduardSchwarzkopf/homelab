@@ -1,6 +1,6 @@
 resource "proxmox_virtual_environment_pool" "tier_0_none" {
   comment = "Tier 0: No Backup"
-  pool_id = "tier-1"
+  pool_id = "tier-0"
 }
 
 resource "proxmox_virtual_environment_pool" "tier_1_critical" {
