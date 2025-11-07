@@ -251,7 +251,6 @@ Organize references by category to help readers find relevant information.
 **Last Updated**: [Month Day, Year]  
 **Status**: [Accepted and Implemented / Accepted / Proposed / Deprecated]  
 **Decision Owner**: [Name/Team]  
-**Related Components**: [List of directories/files affected by this decision]  
 **Related ADRs**: [Links to related architectural decisions]
 
 ---
