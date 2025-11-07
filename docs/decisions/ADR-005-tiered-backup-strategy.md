@@ -13,7 +13,6 @@ The homelab infrastructure requires a comprehensive backup strategy to protect d
 - **Recovery Point Objective (RPO)**: How much data loss is acceptable
 - **Storage Efficiency**: Cost and capacity implications of backup retention
 - **Operational Complexity**: Effort required to manage and monitor backups
-- **Compliance Requirements**: Meeting regulatory and business requirements
 - **Scalability**: Supporting infrastructure growth without proportional cost increases
 - **Disaster Recovery**: Ability to recover from catastrophic failures
 
@@ -78,7 +77,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
 **RTO**: 4 hours (maximum acceptable recovery time)  
 **Pool ID**: `tier-1`  
 
-**Rationale**: Critical production systems require frequent backups to minimize data loss and fast recovery to minimize downtime. Daily backups ensure no more than 24 hours of data loss. 4-hour RTO allows for rapid recovery during business hours.
+**Rationale**: Critical production systems require frequent backups to minimize data loss and fast recovery to minimize downtime. Daily backups ensure no more than 24 hours of data loss. 4-hour RTO allows for rapid recovery.
 
 #### Tier 2: Standard Application
 **Numeric ID**: 2  
@@ -91,7 +90,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
 **RTO**: 24 hours (maximum acceptable recovery time)  
 **Pool ID**: `tier-2`  
 
-**Rationale**: Standard application data is important but not critical. Weekly backups are sufficient for configuration and state data. 24-hour RTO allows for recovery during next business day.
+**Rationale**: Standard application data is important but not critical. Weekly backups are sufficient for configuration and state data. 24-hour RTO allows for recovery during next day.
 
 #### Tier 3: Development/Testing
 **Numeric ID**: 3  
@@ -104,7 +103,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
 **RTO**: 48 hours (maximum acceptable recovery time)  
 **Pool ID**: `tier-3`  
 
-**Rationale**: Development and testing data is valuable for reproducibility but not critical for production. Monthly backups are sufficient. 48-hour RTO allows for recovery during next business week.
+**Rationale**: Development and testing data is valuable for reproducibility but not critical for production. Monthly backups are sufficient. 48-hour RTO allows for recovery during next week.
 
 #### Tier 4: Cache/Temporary
 **Numeric ID**: 4  
@@ -127,7 +126,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
   - Tier 2: 7-day RPO, 24-hour RTO (standard systems)
   - Tier 3: 30-day RPO, 48-hour RTO (development systems)
   - Tier 4: 90-day RPO, 1-week RTO (regenerable data)
-  - Aligns backup strategy with actual business requirements
+  - Aligns backup strategy with actual requirements
   - Avoids over-investment in non-critical data
   
 - **Uniform Approach**:
@@ -190,7 +189,6 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
   - Backup strategy aligns with disaster recovery plan
   - Different recovery procedures for different tiers
   - Clear RTO/RPO targets for each system
-  - Supports business continuity planning
   
 - **Uniform Approach**:
   - Same recovery procedures for all systems
@@ -406,7 +404,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
 - Difficult to scale to many VMs
 - No compliance differentiation
 
-**Why Rejected**: Single pool approach is inefficient and doesn't align with business requirements. Tiered approach provides better protection at lower cost.
+**Why Rejected**: Single pool approach is inefficient and doesn't align with requirements. Tiered approach provides better protection at lower cost.
 
 ### Alternative 2: Cloud-Based Backup Tiers
 **Pros:**
@@ -460,7 +458,7 @@ A tiered backup strategy was selected to optimize backup frequency, retention, a
 - No alignment with recovery requirements
 - Difficult to scale
 
-**Why Rejected**: Time-based retention alone doesn't address the core problem of differentiating backup strategies by data criticality. Tiered approach provides better alignment with business requirements.
+**Why Rejected**: Time-based retention alone doesn't address the core problem of differentiating backup strategies by data criticality. Tiered approach provides better alignment with requirements.
 
 ### Alternative 5: Backup Frequency Based on Data Size
 **Pros:**
