@@ -14,5 +14,5 @@ module "config_data" {
   size             = 1
   node_name        = var.proxmox_node_name
   datastore_id     = "zfs-longhorn"
-  backup_tier      = 1
+  backup_tier      = 2
 }
