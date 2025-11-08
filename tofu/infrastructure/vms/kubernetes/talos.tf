@@ -1,11 +1,11 @@
 locals {
-  control_plane_ip_map = module.controlplane[0].vm_map
-  cp_names             = sort(module.controlplane[0].vm_hostnames)
-  control_plane_ips    = [for nm in local.cp_names : local.control_plane_ip_map[nm]]
-  control_plane_node   = local.control_plane_ips[0]
-  cluster_endpoint     = "https://${local.control_plane_node}:6443"
-  kube_config_path     = "~/.kube/config"
-  talos_config_path    = "~/.talos/config"
+  control_plane_node = tolist(module.controlplane.hostnames)[0]
+  cluster_endpoint   = "https://${local.control_plane_node}:6443"
+  config_filename    = "config"
+  kube_path          = "~/.kube"
+  kube_config_path   = "${local.kube_path}/${local.config_filename}"
+  talos_path         = "~/.talos"
+  talos_config_path  = "${local.talos_path}/${local.config_filename}"
 }
 
 resource "talos_machine_secrets" "this" {
@@ -15,23 +15,18 @@ resource "talos_machine_secrets" "this" {
 data "talos_client_configuration" "this" {
   cluster_name         = local.cluster_name
   client_configuration = talos_machine_secrets.this.client_configuration
-  nodes                = local.control_plane_ips
-  endpoints            = local.control_plane_ips
-
-
+  nodes                = module.controlplane.hostnames
 }
 
 data "talos_machine_configuration" "cp" {
   cluster_name     = local.cluster_name
   cluster_endpoint = local.cluster_endpoint
-  machine_type     = "controlplane"
+  machine_type     = local.cp
   machine_secrets  = talos_machine_secrets.this.machine_secrets
 }
 
 resource "talos_machine_configuration_apply" "cp" {
-  for_each = {
-    for nm in local.cp_names : nm => local.control_plane_ip_map[nm]
-  }
+  for_each = module.controlplane.hostnames
 
   depends_on = [
     module.controlplane,
@@ -65,7 +60,7 @@ resource "talos_machine_bootstrap" "this" {
   depends_on = [talos_machine_configuration_apply.cp]
 
   client_configuration = talos_machine_secrets.this.client_configuration
-  node                 = local.control_plane_ips[0]
+  node                 = local.control_plane_node
 }
 
 data "talos_machine_configuration" "worker" {
@@ -78,7 +73,7 @@ data "talos_machine_configuration" "worker" {
 }
 
 resource "talos_machine_configuration_apply" "worker" {
-  for_each = { for nm, ip in module.worker[0].vm_map : nm => ip }
+  for_each = module.worker.hostnames
 
   depends_on = [
     module.worker,
@@ -105,20 +100,19 @@ resource "null_resource" "write_kubeconfig" {
 
   provisioner "local-exec" {
     command = <<EOT
-      mkdir -p ~/.kube
+      mkdir -p ${local.kube_path}
       echo '${talos_cluster_kubeconfig.this.kubeconfig_raw}' > ${local.kube_config_path}
       chmod 600 ${local.kube_config_path}
     EOT
   }
 }
 
-
 resource "null_resource" "write_talosconfig" {
   depends_on = [talos_cluster_kubeconfig.this]
 
   provisioner "local-exec" {
     command = <<EOT
-      mkdir -p ~/.talos
+      mkdir -p ${local.talos_path}
       echo '${data.talos_client_configuration.this.talos_config}' > ${local.talos_config_path}
       chmod 600 ${local.talos_config_path}
     EOT
