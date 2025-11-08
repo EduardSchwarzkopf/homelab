@@ -26,3 +26,11 @@ resource "proxmox_virtual_environment_pool" "tier_4_cache" {
 resource "proxmox_virtual_environment_pool" "vm_templates" {
   pool_id = "vm-template"
 }
+
+resource "proxmox_virtual_environment_pool" "k8s_worker" {
+  pool_id = "k8s-worker"
+}
+
+resource "proxmox_virtual_environment_pool" "k8s_controlplane" {
+  pool_id = "k8s-controlplane"
+}
