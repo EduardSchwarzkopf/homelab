@@ -6,10 +6,46 @@ locals {
   kube_config_path   = "${local.kube_path}/${local.config_filename}"
   talos_path         = "~/.talos"
   talos_config_path  = "${local.talos_path}/${local.config_filename}"
+  dist_directory     = "${path.module}/dist"
+  cilium_filepath    = "${local.dist_directory}/cilium.yaml"
 }
 
 resource "talos_machine_secrets" "this" {
   talos_version = var.talos_version
+}
+
+resource "terraform_data" "cilium_yaml" {
+  input = local.cilium_filepath
+
+  lifecycle {
+    replace_triggered_by = [talos_machine_secrets.this]
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+    mkdir -p ${local.dist_directory}
+    echo "*" > ${local.dist_directory}/.gitignore
+    helm template \
+          cilium \
+          cilium/cilium \
+          --version 1.18.0 \
+          --namespace kube-system \
+          --set ipam.mode=kubernetes \
+          --set kubeProxyReplacement=true \
+          --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+          --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+          --set cgroup.autoMount.enabled=false \
+          --set cgroup.hostRoot=/sys/fs/cgroup \
+          --set k8sServiceHost=localhost \
+          --set k8sServicePort=7445 > ${local.cilium_filepath}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+    rm -rf ${local.dist_directory}
+    EOT
+  }
 }
 
 data "talos_client_configuration" "this" {
@@ -30,7 +66,7 @@ resource "talos_machine_configuration_apply" "cp" {
 
   depends_on = [
     module.controlplane,
-    data.talos_client_configuration.this,
+    data.talos_client_configuration.this
   ]
 
   client_configuration        = talos_machine_secrets.this.client_configuration
@@ -48,7 +84,7 @@ resource "talos_machine_configuration_apply" "cp" {
         inlineManifests = [
           {
             name     = "cilium"
-            contents = file("${path.module}/data/cilium.yaml")
+            contents = file(terraform_data.cilium_yaml.output)
           }
         ]
       }
