@@ -22,3 +22,7 @@ resource "proxmox_virtual_environment_pool" "tier_4_cache" {
   comment = "Tier 4: Cache/Temporary Data - Quarterly backups, 180-day retention"
   pool_id = "tier-4"
 }
+
+resource "proxmox_virtual_environment_pool" "vm_templates" {
+  pool_id = "vm-template"
+}
