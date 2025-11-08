@@ -42,4 +42,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
   network_device {
     bridge = "vmbr0"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
