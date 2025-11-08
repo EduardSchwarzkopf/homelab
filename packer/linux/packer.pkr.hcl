@@ -98,6 +98,7 @@ source "proxmox-iso" "vm" {
   node                 = "homeserver"
   template_name        = "${local.vm_name}-${local.build_version}"
   template_description = local.build_description
+  pool                 = "vm-template"
 
   cpu_type = "x86-64-v2-AES"
   sockets  = 1
