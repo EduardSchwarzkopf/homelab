@@ -32,6 +32,10 @@ A fully automated infrastructure stack that manages:
 | **Secrets**                | HashiCorp Vault |
 | **GitOps**                 | ArgoCD          |
 
+## Diagram
+
+![Network Diagram](docs/img/homelab.drawio.svg)
+
 ## Quick Start
 
 ### Prerequisites
