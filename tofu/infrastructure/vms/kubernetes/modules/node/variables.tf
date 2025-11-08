@@ -19,11 +19,6 @@ variable "cluster_name" {
   default     = "homelab"
 }
 
-variable "vm_id_start" {
-  description = "Starting VM ID to avoid conflicts"
-  type        = number
-}
-
 variable "vm_count" {
   description = "Number of VMs to create"
   type        = number

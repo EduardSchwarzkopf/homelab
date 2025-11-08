@@ -2,7 +2,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
   count       = var.vm_count
   name        = format("%s-%s-%02d", var.cluster_name, var.role, count.index + 1)
   node_name   = var.proxmox_node_name
-  vm_id       = var.vm_id_start + count.index
   description = format("Talos %s node %d for %s", title(var.role), count.index + 1, var.cluster_name)
   tags        = ["kubernetes", "talos", var.role]
   pool_id     = "k8s-${var.role}"
