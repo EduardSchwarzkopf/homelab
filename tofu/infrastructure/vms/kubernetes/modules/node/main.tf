@@ -7,7 +7,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   pool_id     = "k8s-${var.role}"
 
   clone {
-    vm_id     = 102
+    vm_id     = 106
     node_name = var.proxmox_node_name
   }
 
