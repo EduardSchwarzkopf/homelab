@@ -1,112 +1,92 @@
-# homelab
+# Homelab
 
-A modular, infrastructure-as-code (IaC) project for building and managing my self-hosted homelab environment. 
-This repository automates the provisioning of virtual machines, Kubernetes clusters, and essential services using modern DevOps tools.
+A personal infrastructure project built with OpenTofu, Proxmox, and Kubernetes. This homelab provides a complete, self-hosted environment for running containerized applications with high availability, automated backups, and security-first design.
 
----
+## About This Project
 
+This is my personal homelab infrastructure - a learning project and practical environment for exploring modern infrastructure practices.
+It demonstrates how to build a production-grade, self-hosted platform using Infrastructure as Code, containerization, and cloud-native technologies.
 
-## Overview
+**Why it exists**: I created this to have full control over my infrastructure, learn Kubernetes and infrastructure automation at scale, and build a reliable platform for running personal applications and services.
 
-**homelab** provides a reproducible, automated way to deploy and manage a home infrastructure stack. It leverages:
-- **OpenTofu** for infrastructure provisioning (VMs, networking, storage)
-- **Kubernetes** for container orchestration and application management
-- **Packer** for building custom VM images
-- **Vault, Proxmox, Longhorn, ArgoCD, and more** for secrets, virtualization, storage, and GitOps
+**For others**: If you're building your own homelab or learning infrastructure concepts, feel free to use this as a reference, adapt it for your needs, or learn from the architectural decisions documented in [docs/decisions/](docs/decisions/). Questions and discussions are welcome—this project is meant to be shared and learned from.
 
-The project is designed for flexibility, modularity, and maintainability, making it easy to extend or adapt to my homelab needs.
+## What This Is
 
+A fully automated infrastructure stack that manages:
+- **Virtualization**: Proxmox VE hypervisor with KVM/QEMU
+- **Container Orchestration**: Multi-node Kubernetes cluster (Talos Linux)
+- **Storage**: Distributed storage with Longhorn and ZFS
+- **Networking**: Service mesh with Cilium, load balancing with MetalLB
+- **Secrets Management**: HashiCorp Vault for centralized credential management
+- **Deployment**: GitOps-based application deployment with ArgoCD
+- **Backup & Recovery**: Tiered backup strategy with defined RPO/RTO targets
 
-### Architecture
+## Key Technologies
 
-![Architecture](docs/img/homelab.drawio.svg)
+| Layer                      | Technology      |
+| -------------------------- | --------------- |
+| **Infrastructure as Code** | OpenTofu        |
+| **Hypervisor**             | Proxmox VE      |
+| **Kubernetes OS**          | Talos Linux     |
+| **Secrets**                | HashiCorp Vault |
+| **GitOps**                 | ArgoCD          |
 
----
+## Quick Start
 
-## Prerequisites
+### Prerequisites
+- OpenTofu, Packer, kubectl
+- Proxmox VE environment
+- Access to the infrastructure
 
-- [OpenTofu](https://opentofu.org/)
-- [Packer](https://www.packer.io/)
-- [Proxmox VE](https://www.proxmox.com/) (for virtualization)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [k9s](https://k9scli.io/)
+### Setup
 
----
-
-## Setup & Usage
-
-### 1. Build VM Images
-
-Use Packer to build base images for your VMs.
-
-```sh
+```bash
+# 1. Build VM images
 cd packer/linux
 packer init .
 packer build -var-file=ubuntu-24042.pkrvars.hcl .
-```
-See `packer/README.md` for more details.
 
-### 2. Provision Infrastructure
-
-Use Tofu/Terraform to provision VMs, networks, and storage.
-
-```sh
+# 2. Provision infrastructure
 cd tofu/infrastructure
 tofu init
 tofu plan
 tofu apply
-```
 
-### 3. Deploy Kubernetes Resources
-
-Apply Kubernetes manifests to your cluster.
-
-```sh
+# 3. Bootstrap Kubernetes
 cd kubernetes/bootstrap
 kubectl apply -k .
+
+# 4. Deploy applications
+# Applications are managed via ArgoCD (see kubernetes/apps/)
 ```
 
-Then deploy applications from `kubernetes/apps/` via ArgoCD.
+See [packer/README.md](packer/README.md) for detailed image building instructions.
 
-### 4. Configure Services
+## Project Structure
 
-- Vault, Postgres, and other services are managed under `tofu/services/`.
-- See service-specific files for configuration and secrets management.
+```
+homelab/
+├── docs/                   # Documentation and architecture decisions
+├── kubernetes/             # Kubernetes manifests and applications
+│   ├── apps/               # Application deployments
+│   └── bootstrap/          # Cluster bootstrap (ArgoCD, Vault, Longhorn, MetalLB)
+├── packer/                 # VM image building
+├── tofu/                   # Infrastructure as Code
+│   ├── infrastructure/     # Core infrastructure (Proxmox, VMs, networking)
+│   └── services/           # Service configurations (Vault, Postgres, Nginx)
+└── README.md               # This file
+```
 
----
+## Contributing & Community
 
-## Directory Details
+This is a personal project, but I welcome questions, discussions, and ideas from others building similar infrastructure. If you're:
+- **Learning infrastructure concepts** - explore the code and architectural decisions
+- **Building your own homelab** - adapt and use what works for your setup
+- **Curious about specific decisions** - check [docs/decisions/](docs/decisions/) for the reasoning behind key choices
 
-### kubernetes/
-- **apps/**: Application manifests (e.g., Paperless NGX)
-- **bootstrap/**: Cluster bootstrap resources (ArgoCD, Vault, Longhorn, MetalLB, etc.)
-  - See `kubernetes/bootstrap/README.md` and subdirectory READMEs for details.
-
-### packer/
-- **linux/**: Packer templates and scripts for building Linux VM images.
-- See `packer/README.md` for image build instructions.
-
-### tofu/
-- **infrastructure/**: Tofu/Terraform modules for VMs, networking, storage, and Proxmox integration.
-- **services/**: Service definitions and modules (Vault, Postgres, etc.)
-
----
-
-## References
-
-- [Packer Documentation](https://www.packer.io/docs)
-- [Terraform Documentation](https://www.terraform.io/docs)
-- [OpenTofu Documentation](https://opentofu.org/docs)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
-
-See also:
-- `packer/README.md`
-- `kubernetes/bootstrap/README.md`
-- `kubernetes/bootstrap/resources/longhorn/README.md`
-
----
+Feel free to open discussions or ask questions about how things are implemented.
 
 ## License
 
-This project is licensed under the terms of the [GPL-3.0 license](LICENSE).
+Licensed under [GPL-3.0](LICENSE).

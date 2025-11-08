@@ -5,7 +5,7 @@ module "backup_data" {
   size             = 1500
   node_name        = var.proxmox_node_name
   datastore_id     = "zfs-nas"
-  pool_id          = null
+  backup_tier      = 0
 }
 
 module "config_data" {
@@ -14,4 +14,5 @@ module "config_data" {
   size             = 1
   node_name        = var.proxmox_node_name
   datastore_id     = "zfs-longhorn"
+  backup_tier      = 2
 }
