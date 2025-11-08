@@ -6,6 +6,7 @@ variable "proxmox_node_name" {
 variable "vm_id" {
   description = "VM ID"
   type        = number
+  default     = null
 }
 
 variable "vm_name" {

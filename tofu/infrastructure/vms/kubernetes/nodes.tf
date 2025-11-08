@@ -1,29 +1,27 @@
 
 module "controlplane" {
-  source = "./modules/node"
+  source   = "./modules/node"
+  vm_count = 3
 
   proxmox_node_name = var.proxmox_node_name
-  count             = 1
   cluster_name      = local.cluster_name
-  vm_id_start       = 500
-  role              = "controlplane"
-  disk_size         = 100
+  role              = local.cp
+  disk_size         = 20
 }
 
 
 module "worker" {
-  source = "./modules/node"
+  source   = "./modules/node"
+  vm_count = 2
 
   proxmox_node_name = var.proxmox_node_name
-  count             = 1
   cluster_name      = local.cluster_name
-  vm_id_start       = 600
   role              = "worker"
-  disk_size         = 100
+  disk_size         = 30
   memory            = 4
   cpu_cores         = 4
 
   longhorn_disk_enabled = true
-  longhorn_disk_size    = 100
+  longhorn_disk_size    = 50
   longhorn_datastore_id = "zfs-longhorn"
 }

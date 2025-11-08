@@ -1,3 +1,12 @@
+packer {
+  required_plugins {
+    proxmox = {
+      version = ">= 1.2.3"
+      source  = "github.com/hashicorp/proxmox"
+    }
+  }
+}
+
 locals {
   # Build metadata
   build_by          = "Built by: HashiCorp Packer ${packer.version}"
@@ -98,6 +107,7 @@ source "proxmox-iso" "vm" {
   node                 = "homeserver"
   template_name        = "${local.vm_name}-${local.build_version}"
   template_description = local.build_description
+  pool                 = "vm-template"
 
   cpu_type = "x86-64-v2-AES"
   sockets  = 1

@@ -13,5 +13,6 @@ EOT
 chown -R ollama:ollama $MODELS_PATH
 
 systemctl daemon-reload
+systemctl enable ollama
 
 reboot
