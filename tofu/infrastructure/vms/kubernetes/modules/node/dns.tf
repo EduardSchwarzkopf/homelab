@@ -2,7 +2,7 @@
 resource "time_sleep" "wait_for_dhcp" {
   depends_on = [proxmox_virtual_environment_vm.vm]
 
-  create_duration = "60s"
+  create_duration = "90s"
 }
 
 data "dns_a_record_set" "this" {
