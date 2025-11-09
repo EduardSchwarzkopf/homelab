@@ -18,6 +18,7 @@ env:
   PAPERLESS_DBUSER: "paperless"
   PAPERLESS_DBSSLMODE: "disable"
   BASH_ENV: /vault/secrets/paperless-ngx
+  PAPERLESS_REDIS: "redis://redis-service:6379"
 
 persistence:
   media:
@@ -48,6 +49,9 @@ podSecurityContext:
 serviceAccount:
   create: false
   name: paperless-ngx-sa
+
+redis:
+  enabled: false
 
 podAnnotations:
   vault.hashicorp.com/agent-inject: "true"

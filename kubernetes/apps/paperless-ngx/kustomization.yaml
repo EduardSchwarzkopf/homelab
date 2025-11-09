@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - serviceaccount.yaml
+  - redis.yaml
   - ingress.yaml
   - app.yaml
   - samba.yaml
