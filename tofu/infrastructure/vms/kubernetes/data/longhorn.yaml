@@ -4,8 +4,8 @@ name: longhorn
 provisioning:
   diskSelector:
     match: disk.transport == "virtio"
-  minSize: 20GiB
-  maxSize: 200GiB
+  minSize: 5GiB
+  maxSize: 50GiB
 filesystem:
   type: xfs
 ---
