@@ -11,5 +11,5 @@ persistence:
   enabled: true
   storageClass: longhorn
   accessMode: ReadWriteOnce
-  size: 20Gi
+  size: 5Gi
   retain: true

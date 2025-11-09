@@ -12,7 +12,7 @@ module "controlplane" {
 
 module "worker" {
   source   = "./modules/node"
-  vm_count = 2
+  vm_count = 3
 
   proxmox_node_name = var.proxmox_node_name
   cluster_name      = local.cluster_name
