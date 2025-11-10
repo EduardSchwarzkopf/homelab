@@ -14,7 +14,7 @@ metadata:
     "helm.sh/resource-policy": keep
 spec:
   accessModes:
-    - "ReadWriteOnce"
+    - "ReadWriteMany"
   resources:
     requests:
       storage: "4Gi"
