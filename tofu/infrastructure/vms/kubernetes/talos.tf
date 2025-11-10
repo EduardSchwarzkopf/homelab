@@ -22,6 +22,7 @@ resource "terraform_data" "cilium_yaml" {
   }
 
   provisioner "local-exec" {
+    when    = create
     command = <<EOT
     mkdir -p ${local.dist_directory}
     echo "*" > ${local.dist_directory}/.gitignore
@@ -42,8 +43,9 @@ resource "terraform_data" "cilium_yaml" {
   }
 
   provisioner "local-exec" {
+    when    = destroy
     command = <<EOT
-    rm -rf ${local.dist_directory}
+    rm -rf ${path.module}/dist
     EOT
   }
 }
