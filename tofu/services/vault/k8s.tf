@@ -3,10 +3,14 @@ resource "vault_auth_backend" "kubernetes" {
   path = "kubernetes"
 }
 
+data "external" "k8s_cluster_info" {
+  program = ["bash", "data/get_k8s_info.sh"]
+}
+
 resource "vault_kubernetes_auth_backend_config" "k8s_cfg" {
   backend            = vault_auth_backend.kubernetes.path
-  kubernetes_host    = "https://homelab-controlplane-01:6443"
-  kubernetes_ca_cert = file("data/k8s-ca.cert")
-  token_reviewer_jwt = var.token_reviewer_jwt
+  kubernetes_host    = data.external.k8s_cluster_info.result["host"]
+  kubernetes_ca_cert = data.external.k8s_cluster_info.result["ca_cert"]
+  token_reviewer_jwt = data.external.k8s_cluster_info.result["token"]
   issuer             = "https://kubernetes.default.svc"
 }
