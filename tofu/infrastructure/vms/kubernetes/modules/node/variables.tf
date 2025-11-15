@@ -68,7 +68,7 @@ variable "longhorn_disk_enabled" {
 variable "longhorn_disk_size" {
   description = "Longhorn data disk size in GB"
   type        = number
-  default     = 100
+  default     = 20
 }
 
 variable "longhorn_datastore_id" {
