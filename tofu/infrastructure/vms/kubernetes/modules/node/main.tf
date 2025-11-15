@@ -1,8 +1,19 @@
+resource "random_pet" "node_name" {
+  count = var.vm_count
+  keepers = {
+    vm_count = var.vm_count
+  }
+}
+
+locals {
+  vm_names = [for i in range(var.vm_count) : format("%s-%s-%s", var.cluster_name, var.role, random_pet.node_name[i].id)]
+}
+
 resource "proxmox_virtual_environment_vm" "vm" {
   count       = var.vm_count
-  name        = format("%s-%s-%02d", var.cluster_name, var.role, count.index + 1)
+  name        = local.vm_names[count.index]
   node_name   = var.proxmox_node_name
-  description = format("Talos %s node %d for %s", title(var.role), count.index + 1, var.cluster_name)
+  description = format("Talos %s node %d for %s", title(var.role), count.index, var.cluster_name)
   tags        = ["kubernetes", "talos", var.role]
   pool_id     = "k8s-${var.role}"
 
