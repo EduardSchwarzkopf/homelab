@@ -1,5 +1,5 @@
 locals {
-  control_plane_node = tolist(module.controlplane.hostnames)[0]
+  control_plane_node = module.controlplane.vm_map["controlplane-0"].name
   cluster_endpoint   = "https://${local.control_plane_node}:6443"
   config_filename    = "config"
   kube_path          = "~/.kube"
@@ -9,6 +9,22 @@ locals {
   dist_directory     = "${path.module}/dist"
   cilium_filepath    = "${local.dist_directory}/cilium.yaml"
 }
+
+
+resource "time_sleep" "worker_wait" {
+  depends_on = [module.worker]
+
+  create_duration = "90s"
+}
+
+
+resource "time_sleep" "controlplan_wait" {
+  depends_on = [module.controlplane]
+
+  create_duration = "90s"
+}
+
+
 
 resource "talos_machine_secrets" "this" {
   talos_version = var.talos_version
@@ -22,6 +38,7 @@ resource "terraform_data" "cilium_yaml" {
   }
 
   provisioner "local-exec" {
+    when    = create
     command = <<EOT
     mkdir -p ${local.dist_directory}
     echo "*" > ${local.dist_directory}/.gitignore
@@ -42,8 +59,9 @@ resource "terraform_data" "cilium_yaml" {
   }
 
   provisioner "local-exec" {
+    when    = destroy
     command = <<EOT
-    rm -rf ${local.dist_directory}
+    rm -rf ${path.module}/dist
     EOT
   }
 }
@@ -51,7 +69,7 @@ resource "terraform_data" "cilium_yaml" {
 data "talos_client_configuration" "this" {
   cluster_name         = local.cluster_name
   client_configuration = talos_machine_secrets.this.client_configuration
-  nodes                = module.controlplane.hostnames
+  nodes                = [for vm in module.controlplane.vm_map : vm.name]
 }
 
 data "talos_machine_configuration" "cp" {
@@ -62,16 +80,16 @@ data "talos_machine_configuration" "cp" {
 }
 
 resource "talos_machine_configuration_apply" "cp" {
-  for_each = module.controlplane.hostnames
+  for_each = module.controlplane.vm_map
 
   depends_on = [
-    module.controlplane,
+    time_sleep.controlplan_wait,
     data.talos_client_configuration.this
   ]
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.cp.machine_configuration
-  node                        = each.value
+  node                        = each.value.name
 
   config_patches = [
     yamlencode({
@@ -109,16 +127,16 @@ data "talos_machine_configuration" "worker" {
 }
 
 resource "talos_machine_configuration_apply" "worker" {
-  for_each = module.worker.hostnames
+  for_each = module.worker.vm_map
 
   depends_on = [
-    module.worker,
+    time_sleep.worker_wait,
     data.talos_client_configuration.this,
   ]
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
-  node                        = each.value
+  node                        = each.value.name
 
 }
 

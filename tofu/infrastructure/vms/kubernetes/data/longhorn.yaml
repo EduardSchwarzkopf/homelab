@@ -1,11 +1,11 @@
 apiVersion: v1alpha1
 kind: UserVolumeConfig
-name: longhorn
+name: longhorn-disk
 provisioning:
   diskSelector:
-    match: disk.transport == "virtio"
+    match: disk.dev_path == '/dev/sdb' && !system_disk
   minSize: 5GiB
-  maxSize: 50GiB
+  maxSize: 500GiB
 filesystem:
   type: xfs
 ---
@@ -13,9 +13,9 @@ version: v1alpha1
 machine:
   kubelet:
     extraMounts:
-      - destination: /var/lib/longhorn
+      - destination: /var/mnt/longhorn-disk
         type: bind
-        source: /var/mnt/longhorn
+        source: /var/mnt/longhorn-disk
         options:
           - bind
           - rshared

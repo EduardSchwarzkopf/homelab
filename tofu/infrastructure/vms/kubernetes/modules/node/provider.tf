@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/dns"
       version = "3.4.3"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.7.2"
+    }
   }
 }
 

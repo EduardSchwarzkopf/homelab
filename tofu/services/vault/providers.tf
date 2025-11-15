@@ -5,6 +5,10 @@ terraform {
       source  = "opentofu/vault"
       version = "4.4.0"
     }
+    external = {
+      source  = "opentofu/external"
+      version = "2.3.4"
+    }
   }
 }
 
