@@ -97,6 +97,9 @@ metadata:
     app.kubernetes.io/name: paperless-ngx
     app.kubernetes.io/version: 2.14.7
     helm.sh/chart: paperless-ngx-0.24.1
+  # ArgoCD Sync Wave 1: Deploy Paperless after Samba is ready
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   revisionHistoryLimit: 3
   replicas: 1
@@ -131,6 +134,26 @@ spec:
         fsGroup: 1000
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
+      # Init container: Wait for Samba deployment to be ready before starting Paperless
+      initContainers:
+        - name: wait-for-samba
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Samba deployment to be ready..."
+              kubectl rollout status deployment/paperless-ngx-samba -n paperless-ngx --timeout=5m
+              if [ $? -eq 0 ]; then
+                echo "Samba deployment is ready!"
+                exit 0
+              else
+                echo "Samba deployment failed to become ready within timeout"
+                exit 1
+              fi
+          env:
+            - name: KUBECONFIG
+              value: /var/run/secrets/kubernetes.io/serviceaccount/kubeconfig
       containers:
         - name: paperless-ngx
           image: ghcr.io/paperless-ngx/paperless-ngx:2.19.5

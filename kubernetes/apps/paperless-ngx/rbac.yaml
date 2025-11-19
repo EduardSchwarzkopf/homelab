@@ -1,0 +1,78 @@
+# RBAC configuration for Paperless-NGX application
+# Provides necessary permissions for init containers and service account operations
+
+---
+# Role: Allows reading deployment status for init container health checks
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: paperless-ngx-deployment-reader
+  namespace: paperless-ngx
+  labels:
+    app.kubernetes.io/name: paperless-ngx
+    app.kubernetes.io/component: rbac
+rules:
+  # Permission to get and watch deployments (needed for init container to check Samba status)
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/status"]
+    verbs: ["get", "list", "watch"]
+  # Permission to get and list pods (for rollout status checks)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding: Binds the deployment-reader role to the paperless-ngx service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: paperless-ngx-deployment-reader-binding
+  namespace: paperless-ngx
+  labels:
+    app.kubernetes.io/name: paperless-ngx
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: paperless-ngx-deployment-reader
+subjects:
+  - kind: ServiceAccount
+    name: paperless-ngx-sa
+    namespace: paperless-ngx
+
+---
+# ClusterRole: Allows reading deployment status across namespaces (if needed for future expansion)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: paperless-ngx-deployment-reader-cluster
+  labels:
+    app.kubernetes.io/name: paperless-ngx
+    app.kubernetes.io/component: rbac
+rules:
+  # Permission to get and watch deployments cluster-wide
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/status"]
+    verbs: ["get", "list", "watch"]
+  # Permission to get and list pods cluster-wide
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+# ClusterRoleBinding: Binds the cluster-wide deployment-reader role to the paperless-ngx service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: paperless-ngx-deployment-reader-cluster-binding
+  labels:
+    app.kubernetes.io/name: paperless-ngx
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: paperless-ngx-deployment-reader-cluster
+subjects:
+  - kind: ServiceAccount
+    name: paperless-ngx-sa
+    namespace: paperless-ngx

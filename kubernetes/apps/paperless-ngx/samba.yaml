@@ -5,6 +5,9 @@ metadata:
   namespace: paperless-ngx
   labels:
     app.kubernetes.io/name: paperless-ngx-samba
+  # ArgoCD Sync Wave 0: Deploy Samba first
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   replicas: 1
   selector:
@@ -46,6 +49,31 @@ spec:
           volumeMounts:
             - name: consume
               mountPath: /storage
+          # Readiness probe: Check if Samba is accepting connections on port 445
+          readinessProbe:
+            tcpSocket:
+              port: 445
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          # Liveness probe: Ensure Samba stays healthy
+          livenessProbe:
+            tcpSocket:
+              port: 445
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          # Startup probe: Allow time for Samba to initialize
+          startupProbe:
+            tcpSocket:
+              port: 445
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 30
       volumes:
         - name: consume
           persistentVolumeClaim:
