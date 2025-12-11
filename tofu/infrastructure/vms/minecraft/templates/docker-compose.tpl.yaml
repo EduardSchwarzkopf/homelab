@@ -1,0 +1,36 @@
+services:
+  vanilla:
+    image: itzg/minecraft-server:latest
+    restart: always
+    tty: true
+    stdin_open: true
+    ports:
+      - 25565:${MINECRAFT_PORT}
+    environment:
+      EULA: TRUE
+      MEMORY: 2048M
+      MAX_PLAYERS: 5
+      MOTD: "Enjoy your vanillimilli"
+      DIFFICULTY: 2
+      FORCE_GAMEMODE: true
+      LEVEL: vanilla
+    volumes:
+      - ${MOUNT_PATH}/vanilla:/data
+  creator:
+    image: itzg/minecraft-server:latest
+    restart: always
+    tty: true
+    stdin_open: true
+    ports:
+      - 25566:${MINECRAFT_PORT}
+    environment:
+      EULA: TRUE
+      MEMORY: 2048M
+      MAX_PLAYERS: 5
+      MOTD: "Creative Mode"
+      DIFFICULTY: 2
+      MODE: 1
+      FORCE_GAMEMODE: true
+      LEVEL: creative
+    volumes:
+      - ${MOUNT_PATH}/creator:/data
