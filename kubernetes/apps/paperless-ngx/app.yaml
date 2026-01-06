@@ -161,6 +161,8 @@ spec:
           env:
             - name: BASH_ENV
               value: /vault/secrets/paperless-ngx
+            - name: PAPERLESS_CONSUMER_POLLING
+              value: "60"
             - name: PAPERLESS_ALLOWED_HOSTS
               value: paperless.lan.schwarzkopf.center
             - name: PAPERLESS_CORS_ALLOWED_HOSTS
