@@ -12,7 +12,7 @@ env:
   PAPERLESS_TRUSTED_PROXIES: "*"
 
   PAPERLESS_DBENGINE: "postgresql"
-  PAPERLESS_DBHOST: "database-pg-prod"
+  PAPERLESS_DBHOST: "database-pg-prod.lan"
   PAPERLESS_DBPORT: "5432"
   PAPERLESS_DBNAME: "paperless"
   PAPERLESS_DBUSER: "paperless"
