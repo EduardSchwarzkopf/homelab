@@ -7,5 +7,6 @@ resources:
   - ingress.yaml
   - app.yaml
   - applicationset-apps.yaml
+  - applicationset-infrastructure.yaml
 
 namespace: argocd
