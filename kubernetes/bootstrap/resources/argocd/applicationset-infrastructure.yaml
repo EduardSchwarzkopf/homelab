@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infrastructure-directory
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: "https://github.com/EduardSchwarzkopf/homelab.git"
+        revision: main
+        directories:
+          - path: "kubernetes/infrastructure/*"
+  template:
+    metadata:
+      name: "infrastructure-{{path.basename}}"
+      labels:
+        infrastructure-group: managed-by-applicationset
+    spec:
+      project: default
+      source:
+        repoURL: "https://github.com/EduardSchwarzkopf/homelab.git"
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: kube-system # CoreDNS lives in kube-system
+      syncPolicy:
+        automated:
+          prune: false # Be careful with infrastructure!
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false # Don't create kube-system
