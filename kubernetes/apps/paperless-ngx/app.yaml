@@ -172,7 +172,7 @@ spec:
             - name: PAPERLESS_DBENGINE
               value: postgresql
             - name: PAPERLESS_DBHOST
-              value: database-pg-prod
+              value: database-pg-prod.lan
             - name: PAPERLESS_DBNAME
               value: paperless
             - name: PAPERLESS_DBPORT
