@@ -16,6 +16,10 @@ terraform {
       source  = "cyrilgdn/postgresql"
       version = "1.25.0"
     }
+    vault = {
+      source  = "opentofu/vault"
+      version = "4.4.0"
+    }
   }
 }
 
@@ -33,4 +37,9 @@ provider "proxmox" {
 provider "pihole" {
   url      = "https://pihole.lan.schwarzkopf.center"
   password = var.pihole_password
+}
+
+# Vault provider will read VAULT_ADDR and VAULT_TOKEN from env by default.
+provider "vault" {
+  address = "https://vault.lan.schwarzkopf.center/"
 }
