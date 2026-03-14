@@ -16,7 +16,6 @@ module "nginx_hosts" {
         "argocd.${local.lan_domain}",
         "longhorn.${local.local_domain}",
         "longhorn.${local.lan_domain}",
-        "paperless.${local.lan_domain}",
         "assistant.${local.lan_domain}"
       ]
       forward_host = "192.168.178.240"
@@ -26,6 +25,12 @@ module "nginx_hosts" {
       domain_names     = ["fritz.${local.lan_domain}"]
       use_https_scheme = false
       forward_host     = "192.168.178.1"
+      forward_port     = 80
+    },
+    {
+      domain_names     = ["paperless.${local.lan_domain}"]
+      use_https_scheme = false
+      forward_host     = "paperless.${local.local_tld}"
       forward_port     = 80
     },
     {
