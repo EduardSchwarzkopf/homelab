@@ -14,7 +14,6 @@ module "server" {
   os_disk_size         = 200
 
   cloud_init = {
-    hostname         = local.vm_name
     bootstrap_script = ""
   }
 }

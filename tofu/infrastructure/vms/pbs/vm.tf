@@ -14,7 +14,6 @@ module "server" {
   os_disk_size         = 32
 
   cloud_init = {
-    hostname         = local.vm_name
     bootstrap_script = file("${path.module}/data/bootstrap.sh")
 
     packages = ["isc-dhcp-client"]

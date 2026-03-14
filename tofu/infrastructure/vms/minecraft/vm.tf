@@ -14,7 +14,6 @@ module "server" {
   os_disk_size         = 30
 
   cloud_init = {
-    hostname = local.vm_name
     packages = [
       "openjdk-21-jre-headless",
       "curl",

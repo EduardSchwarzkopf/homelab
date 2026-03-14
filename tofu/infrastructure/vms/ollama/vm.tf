@@ -14,8 +14,6 @@ module "server" {
   os_disk_size         = 30
   use_gpu              = true
   cloud_init = {
-    hostname = local.vm_name
-    packages = ["nvidia-driver-555", "nvidia-cuda-toolkit"]
     bootstrap_script = templatefile("${path.module}/templates/bootstrap.tpl.sh", {
       MOUNT_PATH = local.mount_path
     })

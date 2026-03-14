@@ -15,7 +15,6 @@ module "server" {
 
 
   cloud_init = {
-    hostname = local.vm_name
     packages = [
       "apt-transport-https",
       "ca-certificates",
