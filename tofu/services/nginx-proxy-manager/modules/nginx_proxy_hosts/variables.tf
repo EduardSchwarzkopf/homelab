@@ -9,7 +9,7 @@ variable "proxy_hosts" {
   }))
 }
 
-variable "credential_id" {
-  description = "Credential ID to use for all proxy hosts"
+variable "certificate_id" {
+  description = "Certificate ID to use for all proxy hosts"
   type        = number
 }
