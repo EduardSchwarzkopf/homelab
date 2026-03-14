@@ -1,3 +1,5 @@
+apt install nvidia-driver-555 nvidia-cuda-toolkit -y
+
 ubuntu-drivers autoinstall
 curl -fsSL https://ollama.com/install.sh | sh
 
