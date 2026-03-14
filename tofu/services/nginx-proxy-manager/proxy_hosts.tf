@@ -6,8 +6,8 @@ locals {
 }
 
 module "nginx_hosts" {
-  source        = "./modules/nginx_proxy_hosts"
-  credential_id = nginxproxymanager_certificate_letsencrypt.lan_schwarzkopf_center.id
+  source         = "./modules/nginx_proxy_hosts"
+  certificate_id = 99
 
   proxy_hosts = [
     {
@@ -21,12 +21,6 @@ module "nginx_hosts" {
       ]
       forward_host = "192.168.178.240"
       forward_port = 443
-    },
-    {
-      domain_names     = ["artifactory.${local.lan_domain}"]
-      use_https_scheme = false
-      forward_host     = "artifactory.${local.local_tld}"
-      forward_port     = 8082
     },
     {
       domain_names     = ["fritz.${local.lan_domain}"]
@@ -64,9 +58,10 @@ module "nginx_hosts" {
       forward_port = 8443
     },
     {
-      domain_names = ["plane.${local.lan_domain}"]
-      forward_host = local.pihole_ip
-      forward_port = 8081
+      domain_names     = ["plane.${local.lan_domain}"]
+      forward_host     = local.pihole_ip
+      use_https_scheme = false
+      forward_port     = 8081
     },
     {
       domain_names = ["proxmox.${local.lan_domain}"]
@@ -77,6 +72,12 @@ module "nginx_hosts" {
       domain_names = ["vault.${local.lan_domain}"]
       forward_host = local.pihole_ip
       forward_port = 8200
+    },
+    {
+      domain_names     = ["immich.${local.lan_domain}"]
+      forward_host     = "immich.${local.local_tld}"
+      use_https_scheme = false
+      forward_port     = 2283
     },
     {
       domain_names     = ["printer.${local.local_domain}"]
