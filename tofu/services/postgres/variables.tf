@@ -17,3 +17,8 @@ variable "paperless_db_password" {
   type      = string
   sensitive = true
 }
+
+variable "immich_db_password" {
+  type      = string
+  sensitive = true
+}

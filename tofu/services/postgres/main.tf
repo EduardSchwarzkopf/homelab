@@ -8,6 +8,10 @@ module "app_database" {
     {
       app_name = "paperless",
       password = var.paperless_db_password
+    },
+    {
+      app_name = "immich",
+      password = var.immich_db_password
     }
   ]
 }
