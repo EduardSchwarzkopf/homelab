@@ -6,25 +6,29 @@ services:
       - redisdata:/data
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:${paperless.version}
+    container_name: ${paperless.name}
     restart: unless-stopped
     depends_on:
       - broker
     ports:
-      - "80:8000"
+      - 80:8000
     volumes:
       - ${paperless.data_dir}:/usr/src/paperless/data
       - ${paperless.media_dir}:/usr/src/paperless/media
       - ./export:/usr/src/paperless/export
-      - ./consume:/usr/src/paperless/consume
+      - ${paperless.consume_dir}:/usr/src/paperless/consume
     env_file: ${paperless.env_filepath}
     environment:
+      USERMAP_GID: ${paperless.group_id}
+      USERMAP_UID: ${paperless.user_id}
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_TIME_ZONE: Europe/Berlin
       PAPERLESS_OCR_LANGUAGE: deu
-      PAPERLESS_CONSUMER_POLLING: 300
       PAPERLESS_DBENGINE: postgresql
       PAPERLESS_DBHOST: database-pg-prod.lan
       PAPERLESS_DBPORT: 5432
+      PAPERLESS_CORS_ALLOWED_HOSTS: https://${paperless.name}.lan.schwarzkopf.center
+      PAPERLESS_CSRF_TRUSTED_ORIGINS: https://${paperless.name}.lan.schwarzkopf.center
 volumes:
   data:
   media:

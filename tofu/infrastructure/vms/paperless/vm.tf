@@ -42,7 +42,7 @@ module "server" {
       }
     ]
     bootstrap_script = templatefile("${local.template_dir}/bootstrap.sh.tftpl", {
-      docker_compose_filepath = local.paperless.docker_compose_filepath
+      paperless = local.paperless
     })
   }
 

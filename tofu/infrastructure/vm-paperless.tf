@@ -8,10 +8,16 @@ variable "paperless_secret_key" {
   sensitive = true
 }
 
+variable "paperless_smb_password" {
+  type      = string
+  sensitive = true
+}
+
 module "vm-paperless" {
   source = "./vms/paperless"
 
-  proxmox_node_name    = var.proxmox_node_name
-  db_password          = var.paperless_db_password
-  paperless_secret_key = var.paperless_secret_key
+  proxmox_node_name      = var.proxmox_node_name
+  db_password            = var.paperless_db_password
+  paperless_secret_key   = var.paperless_secret_key
+  paperless_smb_password = var.paperless_smb_password
 }

@@ -8,4 +8,29 @@ apt update
 apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 usermod -aG docker "$(id -nu 1000)"
-su - ubuntu -c "docker compose -f ${docker_compose_filepath} up -d"
+su - ubuntu -c "docker compose -f ${paperless.docker_compose_filepath} up -d"
+
+# SMB Setup
+apt install samba -y
+
+SAMBA_USER="${paperless.smb.user}"
+
+useradd -u ${paperless.user_id} -M -s /sbin/nologin "$SAMBA_USER"
+
+SAMBA_PASS="${paperless.smb.password}"
+printf '%s\n%s\n' "$SAMBA_PASS" "$SAMBA_PASS" | smbpasswd -a -s "$SAMBA_USER"
+
+cat >> /etc/samba/smb.conf << 'EOF'
+
+[consume]
+   path = ${paperless.consume_dir}
+   valid users = ${paperless.smb.user}
+   read only = no
+   browseable = yes
+   create mask = 0660
+   directory mask = 0770
+   force user = ${paperless.smb.user}
+EOF
+
+systemctl enable --now smbd
+systemctl restart smbd
