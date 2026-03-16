@@ -1,7 +1,7 @@
 
-module "vm-ollama" {
-  source = "./vms/ollama"
+# module "vm-ollama" {
+#   source = "./vms/ollama"
 
-  proxmox_node_name = var.proxmox_node_name
-}
+#   proxmox_node_name = var.proxmox_node_name
+# }
 
