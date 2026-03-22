@@ -1,29 +1,9 @@
-terraform {
-  required_version = ">= 1.0"
-  required_providers {
-    vault = {
-      source  = "opentofu/vault"
-      version = "4.4.0"
-    }
-    nginxproxymanager = {
-      source  = "Sander0542/nginxproxymanager"
-      version = "1.2.2"
-    }
-    postgresql = {
-      source  = "cyrilgdn/postgresql"
-      version = ">= 1.25.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "3.8.1"
-    }
-  }
+# Vault provider will read VAULT_ADDR and VAULT_TOKEN from env by default.
+provider "vault" {
+  address = "https://vault.${local.lan_domain}"
 }
 
-# Vault provider will read VAULT_ADDR and VAULT_TOKEN from env by default.
-provider "vault" {}
-
-# Environment variable-based authentication - 
+# Environment variable-based authentication
 # NGINXPROXYMANAGER_PASSWORD
 # NGINXPROXYMANAGER_URL
 # NGINXPROXYMANAGER_USERNAME
@@ -36,4 +16,16 @@ provider "postgresql" {
   password  = data.vault_kv_secret_v2.postgres.data["password"]
   sslmode   = "disable"
   superuser = true
+}
+
+# Environment variable-based authentication
+# PROXMOX_VE_API_TOKEN
+provider "proxmox" {
+  endpoint = "https://proxmox.${local.lan_domain}"
+  insecure = false
+
+  ssh {
+    agent    = true
+    username = var.proxmox_ssh_user
+  }
 }
