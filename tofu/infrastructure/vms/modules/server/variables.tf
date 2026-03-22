@@ -1,5 +1,6 @@
 variable "proxmox_node_name" {
   description = "Name of the Proxmox node"
+  default     = "homeserver"
   type        = string
 }
 
@@ -33,19 +34,20 @@ variable "tags" {
 
 variable "clone_vm_id" {
   description = "Source VM ID to clone from"
+  default     = 102 # Debian
   type        = number
 }
 
 variable "cpu_cores" {
   description = "Number of CPU cores"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "memory_gb" {
   description = "Memory in GB"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "os_disk_datastore_id" {
@@ -56,7 +58,7 @@ variable "os_disk_datastore_id" {
 variable "os_disk_size" {
   description = "OS disk size in GB"
   type        = number
-  default     = 20
+  default     = 10
 }
 
 variable "cloud_init" {
@@ -71,8 +73,9 @@ variable "cloud_init" {
       encoding    = optional(string)
       defer       = optional(bool, false)
     })), [])
-    bootstrap_script = string
+    bootstrap_script = optional(string, "")
   })
+  default = {}
 }
 variable "additional_disks" {
   description = "List of additional disks to attach to the VM"

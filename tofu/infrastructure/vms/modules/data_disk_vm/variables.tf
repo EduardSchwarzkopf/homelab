@@ -5,6 +5,7 @@ variable "consumer_vm_name" {
 
 variable "node_name" {
   description = "Proxmox node name"
+  default     = "homeserver"
   type        = string
 }
 
