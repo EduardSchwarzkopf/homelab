@@ -10,8 +10,3 @@ variable "proxmox_api_token_secret" {
 variable "proxmox_node_name" {
   type = string
 }
-
-variable "immich_db_password" {
-  type      = string
-  sensitive = true
-}

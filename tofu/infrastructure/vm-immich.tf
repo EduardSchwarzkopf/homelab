@@ -1,4 +1,10 @@
 
+variable "immich_db_password" {
+  type      = string
+  sensitive = true
+}
+
+
 module "vm-immich" {
   source = "./vms/immich"
 
