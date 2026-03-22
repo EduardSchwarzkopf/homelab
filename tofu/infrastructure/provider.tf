@@ -15,4 +15,6 @@ provider "pihole" {
 }
 
 # Vault provider will read VAULT_ADDR and VAULT_TOKEN from env by default.
-provider "vault" {}
+provider "vault" {
+  address = "https://vault.lan.schwarzkopf.center"
+}
