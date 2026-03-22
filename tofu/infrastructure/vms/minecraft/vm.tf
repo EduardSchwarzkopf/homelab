@@ -7,7 +7,7 @@ module "server" {
   role                 = "Minecraft Game Server"
   environment          = "prod"
   tags                 = [local.application_name, "gaming", "java"]
-  clone_vm_id          = 100
+  clone_vm_id          = 102
   cpu_cores            = 4
   memory_gb            = 8
   os_disk_datastore_id = "vm-os-pool"
