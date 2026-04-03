@@ -15,7 +15,7 @@ locals {
       os_disk_size = 15
       data_disk = {
         data = { datastore_id = local.nas_datastore_id
-          size        = 5
+          size        = 20
           backup_tier = 2
           mount_path  = local.default_mount_path
         }
