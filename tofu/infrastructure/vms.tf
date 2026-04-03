@@ -62,8 +62,3 @@ module "virtual_machine" {
     }
   } : {}
 }
-
-output "vm_description" {
-
-  value = module.virtual_machine["plane"].description
-}
