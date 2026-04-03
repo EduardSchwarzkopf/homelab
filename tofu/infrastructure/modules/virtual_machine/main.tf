@@ -3,6 +3,15 @@ data "proxmox_virtual_environment_vm" "template" {
   vm_id     = var.clone_vm_id
 }
 
+resource "terraform_data" "created_at" {
+  input = formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.cloud_config]
+    ignore_changes       = [input]
+  }
+}
+
 resource "proxmox_virtual_environment_vm" "server" {
   node_name = var.proxmox_node_name
   vm_id     = var.vm_id
@@ -11,7 +20,7 @@ resource "proxmox_virtual_environment_vm" "server" {
   description = <<-EOF
   Role:        ${var.role}
 
-  Deployed:    ${timestamp()}
+  Deployed:    ${terraform_data.created_at.output}
 
   Notes:       Managed by OpenTofu. Do not edit in UI.
 EOF
