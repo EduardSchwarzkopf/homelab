@@ -11,7 +11,7 @@ resource "postgresql_database" "app_db" {
   name     = each.key
   owner    = postgresql_role.app_user[each.key].name
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 

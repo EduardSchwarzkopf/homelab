@@ -17,15 +17,3 @@ provider "postgresql" {
   sslmode   = "disable"
   superuser = true
 }
-
-# Environment variable-based authentication
-# PROXMOX_VE_API_TOKEN
-provider "proxmox" {
-  endpoint = "https://proxmox.${local.lan_domain}"
-  insecure = false
-
-  ssh {
-    agent    = true
-    username = var.proxmox_ssh_user
-  }
-}

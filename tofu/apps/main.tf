@@ -1,55 +1,11 @@
 locals {
-  debian_vm_id         = 102
-  os_disk_datastore_id = "vm-os-pool"
-  nas_datastore_id     = "zfs-nas"
-  default_mount_path   = "/mnt"
-  environment_prod     = "prod"
-
   apps = {
-    docmost = {
-      create_database = true
-      proxy = {
-        domain_names = ["docmost.${local.lan_domain}"]
-        forward_host = "docmost.${local.local_tld}"
-        forward_port = 80
-      }
-      vm = {
-        role                 = "Knowledge Management"
-        environment          = local.environment_prod
-        clone_vm_id          = local.debian_vm_id
-        cpu_cores            = 2
-        memory_gb            = 4
-        os_disk_datastore_id = local.os_disk_datastore_id
-        os_disk_size         = 20
-        data_disk = {
-          datastore_id = local.nas_datastore_id
-          size         = 100
-          backup_tier  = 2
-          mount_path   = local.default_mount_path
-        }
-      }
-    }
     plane = {
-      create_database = true
+      create_database = false
       proxy = {
         domain_names = ["plane.${local.lan_domain}"]
         forward_host = local.pihole_ip
         forward_port = 8081
-      }
-      vm = {
-        role                 = "Ticket System"
-        environment          = local.environment_prod
-        clone_vm_id          = local.debian_vm_id
-        cpu_cores            = 1
-        memory_gb            = 2
-        os_disk_datastore_id = local.os_disk_datastore_id
-        os_disk_size         = 15
-        data_disk = {
-          datastore_id = local.nas_datastore_id
-          size         = 5
-          backup_tier  = 2
-          mount_path   = local.default_mount_path
-        }
       }
     }
     fritz = {

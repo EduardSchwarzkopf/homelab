@@ -10,6 +10,19 @@ data "vault_kv_secret_v2" "postgres" {
   name  = "postgres"
 }
 
+resource "vault_kv_secret_v2" "ssh_authorized_key" {
+  mount = vault_mount.kv_apps.path
+  name  = "ssh_authorized_key"
+  data_json = jsonencode({
+    private_key = "---"
+    public_key  = local.ssh_authorized_key
+  })
+
+  lifecycle {
+    ignore_changes = [data_json]
+  }
+}
+
 
 resource "vault_kv_secret_v2" "app_database" {
   for_each = local.db_apps
