@@ -1,6 +1,6 @@
 output "vm_id" {
   description = "The ID of the created VM"
-  value       = proxmox_virtual_environment_vm.server.id
+  value       = proxmox_virtual_environment_vm.server.vm_id
 }
 
 output "vm_name" {
