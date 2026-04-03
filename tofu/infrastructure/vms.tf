@@ -45,7 +45,7 @@ data "vault_kv_secret_v2" "authorized_key" {
 
 module "virtual_machine" {
   for_each = local.virtual_machines
-  source   = "${path.module}/modules/virtual_machine"
+  source   = "./modules/virtual_machine"
 
   vm_name              = each.key
   role                 = each.value.role
