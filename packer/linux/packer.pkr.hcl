@@ -103,7 +103,7 @@ source "proxmox-iso" "vm" {
   http_port_max = 8505
 
   vm_name              = local.vm_name
-  tags                 = "template;${local.os_family};${var.os}"
+  tags                 = "os_family-${local.os_family};os-${var.os}"
   node                 = "homeserver"
   template_name        = "${local.vm_name}-${local.build_version}"
   template_description = local.build_description
