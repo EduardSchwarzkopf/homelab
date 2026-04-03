@@ -5,19 +5,12 @@ locals {
 
 resource "terraform_data" "cloud_config" {
   input = templatefile("${local.templates_dir}/cloud-config.tpl.yaml", {
-    hostname                      = var.vm_name
-    ssh_authorized_keys           = var.ssh_authorized_keys
-    packages                      = var.cloud_init.packages
-    write_files                   = var.cloud_init.write_files
-    bootstrap_script              = var.cloud_init.bootstrap_script
-    resize_root_script            = file("${local.scripts_dir}/resize-root-disk.sh")
-    mount_additional_disks_script = file("${local.scripts_dir}/mount-additional-disks.sh")
-    additional_mounts = [
-      for idx, disk in tolist(values(var.additional_disks)) : {
-        mount_path  = disk.mount_path
-        scsi_number = 1 + idx
-      }
-    ]
+    hostname            = var.vm_name
+    ssh_authorized_keys = var.ssh_authorized_keys
+    packages            = var.cloud_init.packages
+    write_files         = var.cloud_init.write_files
+    bootstrap_script    = var.cloud_init.bootstrap_script
+    resize_root_script  = file("${local.scripts_dir}/resize-root-disk.sh")
   })
 }
 

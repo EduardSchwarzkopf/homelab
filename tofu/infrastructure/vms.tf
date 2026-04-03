@@ -5,7 +5,6 @@ locals {
   default_environment          = "prod"
   default_os_disk_datastore_id = "vm-os-pool"
   default_os_disk_size         = 10
-  default_mount_path           = "/mnt"
 
   virtual_machines = {
     plane = {
@@ -17,7 +16,6 @@ locals {
         data = { datastore_id = local.nas_datastore_id
           size        = 20
           backup_tier = 2
-          mount_path  = local.default_mount_path
         }
       }
     }
@@ -31,7 +29,6 @@ locals {
           datastore_id = local.nas_datastore_id
           size         = 100
           backup_tier  = 2
-          mount_path   = local.default_mount_path
         }
       }
     }
@@ -61,8 +58,12 @@ module "virtual_machine" {
     for disk_key, disk in each.value.data_disk : disk_key => {
       datastore_id = disk.datastore_id
       size         = disk.size
-      mount_path   = disk.mount_path
       backup_tier  = disk.backup_tier
     }
   } : {}
+}
+
+output "vm_description" {
+
+  value = module.virtual_machine["plane"].description
 }

@@ -83,7 +83,6 @@ variable "additional_disks" {
     datastore_id = string
     size         = number
     file_format  = optional(string, "raw")
-    mount_path   = string
     backup_tier  = number
   }))
   default = {}
