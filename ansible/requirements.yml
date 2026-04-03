@@ -1,0 +1,8 @@
+collections:
+  - name: community.general
+  - name: community.docker
+  - name: ansible.posix
+
+roles:
+  - name: geerlingguy.docker
+  - name: geerlingguy.ntp
