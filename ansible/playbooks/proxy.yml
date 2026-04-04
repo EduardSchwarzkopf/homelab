@@ -1,0 +1,44 @@
+---
+- name: Manage NPM proxy hosts
+  hosts: localhost
+  gather_facts: false
+  vars:
+    npm_proxy_hosts:
+      - domain_names:
+          - printer.{{ lan_domain }}
+        forward_host: "{{ hostvars['printer'].ansible_host }}"
+        forward_port: 80
+
+      - domain_names:
+          - fritz.{{ lan_domain }}
+        forward_host: "{{ hostvars['fritzbox'].ansible_host }}"
+        forward_port: 80
+
+      - domain_names:
+          - npm.{{ lan_domain }}
+        forward_host: "{{ hostvars['pihole'].ansible_host }}"
+        forward_port: 81
+
+      - domain_names:
+          - vault.{{ lan_domain }}
+        forward_host: "{{ hostvars['pihole'].ansible_host }}"
+        forward_port: 8200
+        forward_scheme: https
+
+      - domain_names:
+          - proxmox.{{ lan_domain }}
+        forward_host: "{{ hostvars['homeserver'].ansible_host }}"
+        forward_port: 8006
+        forward_scheme: https
+
+      - domain_names:
+          - pihole.{{ lan_domain }}
+        forward_host: "{{ hostvars['pihole'].ansible_host }}"
+        forward_port: 8443
+        forward_scheme: https
+
+  tasks:
+    - name: Configure proxy hosts
+      ansible.builtin.import_role:
+        name: nginx_proxy_manager
+        tasks_from: proxy_hosts.yml

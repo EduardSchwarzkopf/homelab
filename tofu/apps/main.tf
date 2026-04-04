@@ -1,13 +1,5 @@
 locals {
   apps = {
-    # docmost = {
-    #   create_database = false
-    #   proxy = {
-    #     domain_names = ["docmost.${local.lan_domain}"]
-    #     forward_host = "docmost.lan"
-    #     forward_port = 3000
-    #   }
-    # }
     plane = {
       create_database = false
       proxy = {
@@ -57,55 +49,12 @@ locals {
         forward_port = 80
       }
     }
-    pihole = {
-      create_database = false
-      proxy = {
-        domain_names     = ["pihole.${local.lan_domain}"]
-        forward_host     = local.pihole_ip
-        forward_port     = 8443
-        use_https_scheme = true
-      }
-    }
-    proxmox = {
-      create_database = false
-      proxy = {
-        domain_names     = ["proxmox.${local.lan_domain}"]
-        use_https_scheme = true
-        forward_host     = "192.168.178.10"
-        forward_port     = 8006
-      }
-    }
-    vault = {
-      create_database = false
-      proxy = {
-        domain_names     = ["vault.${local.lan_domain}"]
-        forward_host     = local.pihole_ip
-        forward_port     = 8200
-        use_https_scheme = true
-      }
-    }
     immich = {
       create_database = true
       proxy = {
         domain_names = ["immich.${local.lan_domain}"]
         forward_host = "immich.${local.local_tld}"
         forward_port = 2283
-      }
-    }
-    printer = {
-      create_database = false
-      proxy = {
-        domain_names = ["printer.${local.local_domain}"]
-        forward_host = "192.168.178.106"
-        forward_port = 80
-      }
-    }
-    nginx-proxy-manager = {
-      create_database = false
-      proxy = {
-        domain_names = ["npm.${local.lan_domain}"]
-        forward_host = local.pihole_ip
-        forward_port = 81
       }
     }
   }
