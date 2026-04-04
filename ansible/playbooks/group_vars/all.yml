@@ -5,5 +5,4 @@ vault_mount_path: kv-apps
 postgres_host: "{{ hostvars[groups['postgres_host'][0]].ansible_host }}"
 postgres_port: 5432
 
-npm_url: "https://npm.{{lan_domain}}"
-npm_user: "eduard@schwarzkopf.center"
+npm_api_url: "https://npm.{{lan_domain}}/api"

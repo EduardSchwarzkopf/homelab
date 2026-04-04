@@ -7,25 +7,13 @@ locals {
   default_os_disk_size         = 10
 
   virtual_machines = {
-    plane = {
-      role         = "Ticket System"
-      cpu_cores    = 1
-      memory_gb    = 2
-      os_disk_size = 15
-      data_disk = {
-        data = { datastore_id = local.nas_datastore_id
-          size        = 20
-          backup_tier = 2
-        }
-      }
-    }
-    docmost = {
-      role         = "Knowledge Management"
-      cpu_cores    = 2
-      memory_gb    = 4
+    office = {
+      role         = "Productivity Applications"
+      cpu_cores    = 4
+      memory_gb    = 8
       os_disk_size = 20
       data_disk = {
-        data = {
+        docmost = {
           datastore_id = local.nas_datastore_id
           size         = 100
           backup_tier  = 2

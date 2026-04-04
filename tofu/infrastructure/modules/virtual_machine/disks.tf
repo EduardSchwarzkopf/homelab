@@ -1,10 +1,10 @@
 resource "proxmox_virtual_environment_vm" "data_disk_vm" {
   for_each  = var.additional_disks
-  name      = "${var.vm_name}-${each.key}-vm"
+  name      = "${each.key}-disk-vm"
   node_name = var.proxmox_node_name
   started   = false
   on_boot   = false
-  tags      = ["data-vm", "do-not-start", "backup-tier-${each.value.backup_tier}"]
+  tags      = ["data-vm", "do-not-start", "${var.vm_name}", "backup-tier-${each.value.backup_tier}"]
   pool_id   = "tier-${each.value.backup_tier}"
 
   disk {
@@ -15,6 +15,6 @@ resource "proxmox_virtual_environment_vm" "data_disk_vm" {
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
