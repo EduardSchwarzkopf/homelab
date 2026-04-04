@@ -4,8 +4,8 @@
     name: "{{ item }}"
     state: absent
   loop:
-    - "{{ docmost_name }}"
-    - "{{ docmost_name }}-redis"
+    - "{{ docmost_app_name }}"
+    - "{{ docmost_app_name }}-redis"
   failed_when: false
 
 - name: Remove volumes
@@ -13,13 +13,13 @@
     name: "{{ item }}"
     state: absent
   loop:
-    - "{{ docmost_name }}-data"
-    - "{{ docmost_name }}-redis"
+    - "{{ docmost_app_name }}-data"
+    - "{{ docmost_app_name }}-redis"
   failed_when: false
 
 - name: Remove network
   containers.podman.podman_network:
-    name: "{{ docmost_name }}"
+    name: "{{ docmost_app_name }}"
     state: absent
     force: true
   failed_when: false

@@ -1,7 +1,7 @@
 ---
 docmost_quadlet_dir: /etc/containers/systemd
 
-docmost_name: "docmost"
+docmost_app_name: "docmost"
 
 docmost_version: latest
 dockmost_redis_version: 7
@@ -11,7 +11,7 @@ docmost_image: "{{docmost_image_registry}}/docmost/docmost:{{docmost_version}}"
 docmost_redis_image: "{{docmost_image_registry}}/library/redis:{{ dockmost_redis_version }}-alpine"
 
 docmost_port: 3000
-docmost_app_url: "https://{{ docmost_name }}.{{ lan_domain }}"
+docmost_app_url: "https://{{ docmost_app_name }}.{{ lan_domain }}"
 
-docmost_db_user: "{{ docmost_name }}"
-docmost_db_name: "{{ docmost_name }}"
+docmost_db_user: "{{ docmost_app_name }}"
+docmost_db_name: "{{ docmost_app_name }}"

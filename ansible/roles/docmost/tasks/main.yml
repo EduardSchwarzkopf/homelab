@@ -1,4 +1,9 @@
 ---
+- name: Generate and store docmost secrets in vault
+  ansible.builtin.import_tasks: secrets_generate.yml
+
+- name: fetch and docmost secrets from vault
+  ansible.builtin.import_tasks: secrets_fetch.yml
+
 - name: Install Docmost
   ansible.builtin.import_tasks: install.yml
-  tags: install

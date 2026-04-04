@@ -10,7 +10,7 @@
 
 - name: Create docmost network
   containers.podman.podman_network:
-    name: "{{ docmost_name }}"
+    name: "{{ docmost_app_name }}"
     state: present
     driver: bridge
 
@@ -24,13 +24,13 @@
 
 - name: Deploy Redis container
   containers.podman.podman_container:
-    name: "{{ docmost_name }}-redis"
+    name: "{{ docmost_app_name }}-redis"
     image: "{{ docmost_redis_image }}"
     state: started
     restart_policy: always
-    network: "{{ docmost_name }}"
+    network: "{{ docmost_app_name }}"
     volumes:
-      - "{{ docmost_name }}-redis:/data"
+      - "{{ docmost_app_name }}-redis:/data"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -39,27 +39,27 @@
 
 - name: Deploy Docmost container
   containers.podman.podman_container:
-    name: "{{ docmost_name }}"
+    name: "{{ docmost_app_name }}"
     image: "{{ docmost_image }}"
     state: started
     restart_policy: always
-    network: "{{ docmost_name }}"
+    network: "{{ docmost_app_name }}"
     ports:
       - "{{ docmost_port }}:3000"
     volumes:
-      - "{{ docmost_name }}-data:/app/data/storage"
+      - "{{ docmost_app_name }}-data:/app/data/storage"
     env:
       APP_URL: "{{ docmost_app_url }}"
       APP_SECRET: "{{ docmost_app_secret }}"
       DATABASE_URL: "postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@{{ postgres_host }}:{{ postgres_port }}/{{ docmost_db_name }}"
-      REDIS_URL: "redis://{{ docmost_name }}-redis:6379"
+      REDIS_URL: "redis://{{ docmost_app_name }}-redis:6379"
 
 - name: Verify docmost is running
   containers.podman.podman_container_info:
-    name: "{{ docmost_name }}"
+    name: "{{ docmost_app_name }}"
   register: docmost_info
 
-- name: Wait for {{ docmost_name }} to be reachable on port {{ docmost_port }}
+- name: Wait for {{ docmost_app_name }} to be reachable on port {{ docmost_port }}
   ansible.builtin.wait_for:
     host: "{{ ansible_host }}"
     port: "{{ docmost_port }}"
@@ -67,6 +67,6 @@
     timeout: 10
     delay: 5
 
-- name: Print {{ docmost_name }} status
+- name: Print {{ docmost_app_name }} status
   ansible.builtin.debug:
     msg: "Docmost is up and listening on {{ ansible_host }}:{{ docmost_port }}"
