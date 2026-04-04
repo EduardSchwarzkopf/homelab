@@ -1,5 +1,4 @@
 - name: Deploy Docmost via Podman
   hosts: docmost
-  become: true
   roles:
     - role: docmost

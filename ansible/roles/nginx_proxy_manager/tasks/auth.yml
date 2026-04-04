@@ -1,0 +1,30 @@
+---
+- name: Fetch NPM credentials from vault
+  community.hashi_vault.vault_kv2_get:
+    engine_mount_point: "{{ vault_mount_path }}"
+    path: nginx_proxy_manager
+  register: npm_credentials
+  no_log: true
+  delegate_to: localhost
+
+- name: Authenticate with NPM and get token
+  uri:
+    url: "{{ npm_api_url }}/tokens"
+    method: POST
+    validate_certs: no
+    status_code: 200
+    body_format: json
+    body:
+      identity: "{{ npm_credentials.secret.username }}"
+      secret: "{{ npm_credentials.secret.password }}"
+    headers:
+      Content-Type: application/json
+  register: npm_auth
+  delegate_to: localhost
+  no_log: true
+
+- name: Set auth token fact
+  ansible.builtin.set_fact:
+    npm_token: "{{ npm_auth.json.token }}"
+  no_log: true
+  delegate_to: localhost

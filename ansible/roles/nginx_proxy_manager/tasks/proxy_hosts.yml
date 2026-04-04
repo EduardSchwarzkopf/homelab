@@ -1,0 +1,20 @@
+---
+- name: Authenticate with NPM
+  ansible.builtin.import_tasks: auth.yml
+
+- name: Get existing proxy hosts
+  ansible.builtin.uri:
+    url: "{{ npm_api_url }}/nginx/proxy-hosts"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ npm_token }}"
+    status_code: 200
+  register: existing_hosts
+  delegate_to: localhost
+
+- name: Create or update proxy hosts
+  ansible.builtin.include_tasks: proxy_host_single.yml
+  loop: "{{ npm_proxy_hosts }}"
+  loop_control:
+    loop_var: proxy_host
+    label: "{{ proxy_host.domain_names | join(', ') }}"
