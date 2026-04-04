@@ -1,4 +1,22 @@
 ---
+- name: Setup disks for docmost
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    os_disks:
+      - scsi_num: 1
+        mount_path: "{{ docmost_data_dir }}"
+
+- name: Set ownership of mount point for pod user
+  ansible.builtin.file:
+    state: directory
+    path: "{{ docmost_data_dir }}"
+    owner: "{{ docmost_pod_user_id }}"
+    group: "{{ docmost_pod_user_id }}"
+    mode: "0750"
+    recurse: true
+
 - name: Generate and store docmost secrets in vault
   ansible.builtin.import_tasks: secrets_generate.yml
 

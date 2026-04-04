@@ -1,5 +1,13 @@
 locals {
   apps = {
+    docmost = {
+      create_database = false
+      proxy = {
+        domain_names = ["docmost.${local.lan_domain}"]
+        forward_host = "docmost.lan"
+        forward_port = 3000
+      }
+    }
     plane = {
       create_database = false
       proxy = {

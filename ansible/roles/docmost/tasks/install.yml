@@ -19,7 +19,6 @@
     name: "{{ item }}"
     state: present
   loop:
-    - docmost-data
     - docmost-redis
 
 - name: Deploy Redis container
@@ -47,7 +46,7 @@
     ports:
       - "{{ docmost_port }}:3000"
     volumes:
-      - "{{ docmost_app_name }}-data:/app/data/storage"
+      - "{{ docmost_data_dir }}:/app/data/storage"
     env:
       APP_URL: "{{ docmost_app_url }}"
       APP_SECRET: "{{ docmost_app_secret }}"

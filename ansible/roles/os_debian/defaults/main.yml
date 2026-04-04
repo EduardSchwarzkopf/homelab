@@ -1,0 +1,8 @@
+---
+# List of disks to mount
+# os_disks:
+#   - scsi_num: 1
+#     mount_path: /mnt/data
+#   - scsi_num: 2
+#     mount_path: /mnt/backup
+os_disks: []
