@@ -1,0 +1,120 @@
+---
+- name: Check podman version
+  ansible.builtin.command: podman --version
+  register: podman_ver
+  changed_when: false
+
+- name: Print podman version
+  ansible.builtin.debug:
+    msg: "{{ podman_ver.stdout }}"
+
+- name: List deployed Quadlet files
+  ansible.builtin.command: ls -la {{ docmost_quadlet_dir }}/
+  register: quadlet_files
+  changed_when: false
+
+- name: Print Quadlet files
+  ansible.builtin.debug:
+    msg: "{{ quadlet_files.stdout }}"
+
+- name: Run Quadlet generator manually to check for errors
+  ansible.builtin.command: /usr/lib/systemd/system-generators/podman-system-generator --dryrun
+  register: generator_output
+  changed_when: false
+  failed_when: false
+
+- name: Print generator output
+  ansible.builtin.debug:
+    msg: "{{ generator_output.stdout }}\n{{ generator_output.stderr }}"
+####
+
+- name: Uninstall Docmost
+  ansible.builtin.import_tasks: uninstall.yml
+  tags: uninstall
+
+- name: Ensure docmost directory exists
+  ansible.builtin.file:
+    path: "{{ docmost_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+- name: Ensure docmost network exists
+  containers.podman.podman_network:
+    name: docmost
+    state: present
+    driver: bridge
+
+- name: Ensure docmost volumes exist
+  containers.podman.podman_volume:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - docmost-data
+    - docmost-postgres
+    - docmost-redis
+
+- name: Deploy PostgreSQL container
+  containers.podman.podman_container:
+    name: docmost-db
+    image: "{{ docmost_postgres_image }}"
+    state: started
+    restart_policy: always
+    network: docmost
+    volumes:
+      - docmost-postgres:/var/lib/postgresql/data
+    env:
+      POSTGRES_USER: "{{ docmost_db_user }}"
+      POSTGRES_PASSWORD: "{{ docmost_db_password }}"
+      POSTGRES_DB: "{{ docmost_db_name }}"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U {{ docmost_db_user }} -d {{ docmost_db_name }}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+- name: Deploy Redis container
+  containers.podman.podman_container:
+    name: docmost-redis
+    image: "{{ docmost_redis_image }}"
+    state: started
+    restart_policy: always
+    network: docmost
+    command: "redis-server --requirepass {{ docmost_redis_password }}"
+    volumes:
+      - docmost-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "{{ docmost_redis_password }}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+- name: Deploy Docmost container
+  containers.podman.podman_container:
+    name: docmost
+    image: "{{ docmost_image }}"
+    state: started
+    restart_policy: always
+    network: docmost
+    ports:
+      - "{{ docmost_port }}:3000"
+    volumes:
+      - docmost-data:/app/data/storage
+    env:
+      APP_URL: "{{ docmost_app_url }}"
+      APP_SECRET: "{{ docmost_app_secret }}"
+      DATABASE_URL: "postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@docmost-db:5432/{{ docmost_db_name }}"
+      REDIS_URL: "redis://:{{ docmost_redis_password }}@docmost-redis:6379"
+
+- name: Verify docmost is running
+  containers.podman.podman_container_info:
+    name: docmost
+  register: docmost_info
+
+- name: Print docmost status
+  ansible.builtin.debug:
+    msg: "Docmost status: {{ docmost_info.containers[0].State.Status }}"

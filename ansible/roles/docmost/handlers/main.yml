@@ -1,0 +1,9 @@
+---
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart docmost
+  ansible.builtin.systemd:
+    name: docmost.service
+    state: restarted

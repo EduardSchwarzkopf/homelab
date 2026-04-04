@@ -1,0 +1,29 @@
+---
+- name: Install Podman prerequisites
+  ansible.builtin.import_tasks: prerequisites.yml
+
+- name: Install Podman
+  ansible.builtin.import_tasks: install.yml
+
+- name: Install extra tools (Buildah, Skopeo)
+  ansible.builtin.import_tasks: tools.yml
+
+- name: Install podman-compose
+  ansible.builtin.import_tasks: compose.yml
+  when: podman_install_compose
+
+- name: Configure registries
+  ansible.builtin.import_tasks: registries.yml
+
+- name: Configure storage
+  ansible.builtin.import_tasks: storage.yml
+
+- name: Configure rootless Podman for users
+  ansible.builtin.import_tasks: rootless.yml
+  when:
+    - podman_rootless
+    - podman_users | length > 0
+
+- name: Configure Podman socket
+  ansible.builtin.import_tasks: socket.yml
+  when: podman_socket_enabled

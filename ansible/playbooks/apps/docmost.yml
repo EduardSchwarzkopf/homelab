@@ -1,0 +1,7 @@
+- name: Deploy Docmost via Podman
+  hosts: docmost
+  become: true
+  vars_files:
+    - ../../vars/docmost.yml
+  roles:
+    - role: docmost

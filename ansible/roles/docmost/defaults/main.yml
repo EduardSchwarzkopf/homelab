@@ -1,0 +1,13 @@
+---
+docmost_dir: /opt/docmost
+docmost_quadlet_dir: /etc/containers/systemd
+
+docmost_image: docker.io/docmost/docmost:latest
+docmost_postgres_image: docker.io/library/postgres:16-alpine
+docmost_redis_image: docker.io/library/redis:7-alpine
+
+docmost_port: 3000
+docmost_app_url: "http://localhost:{{ docmost_port }}"
+
+docmost_db_user: docmost
+docmost_db_name: docmost

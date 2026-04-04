@@ -1,0 +1,34 @@
+---
+- name: Ensure /etc/containers directory exists
+  ansible.builtin.file:
+    path: /etc/containers
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure container registries
+  ansible.builtin.copy:
+    dest: /etc/containers/registries.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible — do not edit manually
+      unqualified-search-registries = {{ podman_registries_search | to_json }}
+
+      {% if podman_registries_insecure | length > 0 %}
+      [[registry]]
+      {% for reg in podman_registries_insecure %}
+      location = "{{ reg }}"
+      insecure = true
+      {% endfor %}
+      {% endif %}
+
+      {% if podman_registries_blocked | length > 0 %}
+      [[registry]]
+      {% for reg in podman_registries_blocked %}
+      location = "{{ reg }}"
+      blocked = true
+      {% endfor %}
+      {% endif %}

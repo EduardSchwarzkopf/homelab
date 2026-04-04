@@ -1,0 +1,28 @@
+---
+- name: Install Podman (latest)
+  ansible.builtin.package:
+    name: podman
+    state: present
+    update_cache: true
+  when: podman_version == "" or podman_version is not defined
+  notify: Restart podman socket
+
+- name: Install Podman (pinned version)
+  ansible.builtin.apt:
+    name: "podman={{ podman_version }}"
+    state: present
+    update_cache: true
+  when:
+    - podman_version is defined
+    - podman_version != ""
+    - ansible_facts["os_family"] == "Debian"
+  notify: Restart podman socket
+
+- name: Verify Podman installation
+  ansible.builtin.command: podman --version
+  register: podman_version_output
+  changed_when: false
+
+- name: Print Podman version
+  ansible.builtin.debug:
+    msg: "Podman installed: {{ podman_version_output.stdout }}"

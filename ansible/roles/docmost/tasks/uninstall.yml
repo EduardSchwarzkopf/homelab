@@ -1,0 +1,32 @@
+---
+- name: Stop and remove containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - docmost
+    - docmost-redis
+    - docmost-db
+  failed_when: false
+
+- name: Remove volumes
+  containers.podman.podman_volume:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - docmost-data
+    - docmost-postgres
+    - docmost-redis
+  failed_when: false
+
+- name: Remove network
+  containers.podman.podman_network:
+    name: docmost
+    state: absent
+    force: true
+  failed_when: false
+
+- name: Remove docmost directory
+  ansible.builtin.file:
+    path: "{{ docmost_dir }}"
+    state: absent

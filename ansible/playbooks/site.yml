@@ -1,0 +1,8 @@
+---
+- name: Install and configure Podman
+  hosts: podman_hosts
+  become: true
+  vars_files:
+    - vars/podman.yml
+  roles:
+    - role: podman
