@@ -1,8 +1,9 @@
 collections:
   - name: community.general
   - name: containers.podman
-    version: ">=1.0.0"
   - name: ansible.posix
+  - name: community.postgresql
+  - name: community.hashi_vault
 
 roles:
   - name: geerlingguy.docker

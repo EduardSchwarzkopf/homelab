@@ -2,6 +2,6 @@
   hosts: docmost
   become: true
   vars_files:
-    - ../../vars/docmost.yml
+    - ./vars/docmost.secrets.yml
   roles:
     - role: docmost

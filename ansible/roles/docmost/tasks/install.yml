@@ -1,0 +1,72 @@
+---
+- name: Provision docmost database
+  include_role:
+    name: postgres
+    tasks_from: provision_database.yml
+  vars:
+    database_name: "{{ docmost_db_name }}"
+    database_user: "{{ docmost_db_user }}"
+    database_user_password: "{{ docmost_db_password }}"
+
+- name: Create docmost network
+  containers.podman.podman_network:
+    name: "{{ docmost_name }}"
+    state: present
+    driver: bridge
+
+- name: Create docmost volumes
+  containers.podman.podman_volume:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - docmost-data
+    - docmost-redis
+
+- name: Deploy Redis container
+  containers.podman.podman_container:
+    name: "{{ docmost_name }}-redis"
+    image: "{{ docmost_redis_image }}"
+    state: started
+    restart_policy: always
+    network: "{{ docmost_name }}"
+    volumes:
+      - "{{ docmost_name }}-redis:/data"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+- name: Deploy Docmost container
+  containers.podman.podman_container:
+    name: "{{ docmost_name }}"
+    image: "{{ docmost_image }}"
+    state: started
+    restart_policy: always
+    network: "{{ docmost_name }}"
+    ports:
+      - "{{ docmost_port }}:3000"
+    volumes:
+      - "{{ docmost_name }}-data:/app/data/storage"
+    env:
+      APP_URL: "{{ docmost_app_url }}"
+      APP_SECRET: "{{ docmost_app_secret }}"
+      DATABASE_URL: "postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@{{ postgres_host }}:{{ postgres_port }}/{{ docmost_db_name }}"
+      REDIS_URL: "redis://{{ docmost_name }}-redis:6379"
+
+- name: Verify docmost is running
+  containers.podman.podman_container_info:
+    name: "{{ docmost_name }}"
+  register: docmost_info
+
+- name: Wait for {{ docmost_name }} to be reachable on port {{ docmost_port }}
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: "{{ docmost_port }}"
+    state: started
+    timeout: 10
+    delay: 5
+
+- name: Print {{ docmost_name }} status
+  ansible.builtin.debug:
+    msg: "Docmost is up and listening on {{ ansible_host }}:{{ docmost_port }}"

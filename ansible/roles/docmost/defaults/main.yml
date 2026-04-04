@@ -1,13 +1,17 @@
 ---
-docmost_dir: /opt/docmost
 docmost_quadlet_dir: /etc/containers/systemd
 
-docmost_image: docker.io/docmost/docmost:latest
-docmost_postgres_image: docker.io/library/postgres:16-alpine
-docmost_redis_image: docker.io/library/redis:7-alpine
+docmost_name: "docmost"
+
+docmost_version: latest
+dockmost_redis_version: 7
+
+docmost_image_registry: docker.io
+docmost_image: "{{docmost_image_registry}}/docmost/docmost:{{docmost_version}}"
+docmost_redis_image: "{{docmost_image_registry}}/library/redis:{{ dockmost_redis_version }}-alpine"
 
 docmost_port: 3000
-docmost_app_url: "http://localhost:{{ docmost_port }}"
+docmost_app_url: "https://{{ docmost_name }}.{{ lan_domain }}"
 
-docmost_db_user: docmost
-docmost_db_name: docmost
+docmost_db_user: "{{ docmost_name }}"
+docmost_db_name: "{{ docmost_name }}"

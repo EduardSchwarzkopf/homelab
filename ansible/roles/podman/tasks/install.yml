@@ -5,7 +5,7 @@
     state: present
     update_cache: true
   when: podman_version == "" or podman_version is not defined
-  notify: Restart podman socket
+  notify: "restart podman"
 
 - name: Install Podman (pinned version)
   ansible.builtin.apt:
@@ -16,7 +16,7 @@
     - podman_version is defined
     - podman_version != ""
     - ansible_facts["os_family"] == "Debian"
-  notify: Restart podman socket
+  notify: "restart podman"
 
 - name: Verify Podman installation
   ansible.builtin.command: podman --version

@@ -1,0 +1,19 @@
+---
+- name: Restart podman socket
+  ansible.builtin.service:
+    name: podman.socket
+    state: restarted
+  when: podman_socket_enabled | default(false)
+  listen: "restart podman"
+
+- name: Enable podman socket for users
+  ansible.builtin.systemd:
+    name: podman.socket
+    state: started
+    enabled: true
+    scope: user
+  become: true
+  become_user: "{{ item }}"
+  loop: "{{ podman_users | default([]) }}"
+  when: podman_socket_enabled | default(false)
+  listen: "restart podman"

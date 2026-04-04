@@ -4,5 +4,6 @@ galaxy_info:
   description: Deploy Docmost via Podman Quadlets
   license: MIT
   min_ansible_version: "2.12"
+
 dependencies:
   - role: podman

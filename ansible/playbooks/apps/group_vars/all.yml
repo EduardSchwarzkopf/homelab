@@ -1,0 +1,6 @@
+---
+lan_domain: "lan.schwarzkopf.center"
+vault_mount_path: kv-apps
+
+postgres_host: "{{ hostvars[groups['postgres_host'][0]].ansible_host }}"
+postgres_port: 5432

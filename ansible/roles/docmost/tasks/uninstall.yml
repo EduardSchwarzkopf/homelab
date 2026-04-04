@@ -4,9 +4,8 @@
     name: "{{ item }}"
     state: absent
   loop:
-    - docmost
-    - docmost-redis
-    - docmost-db
+    - "{{ docmost_name }}"
+    - "{{ docmost_name }}-redis"
   failed_when: false
 
 - name: Remove volumes
@@ -14,19 +13,13 @@
     name: "{{ item }}"
     state: absent
   loop:
-    - docmost-data
-    - docmost-postgres
-    - docmost-redis
+    - "{{ docmost_name }}-data"
+    - "{{ docmost_name }}-redis"
   failed_when: false
 
 - name: Remove network
   containers.podman.podman_network:
-    name: docmost
+    name: "{{ docmost_name }}"
     state: absent
     force: true
   failed_when: false
-
-- name: Remove docmost directory
-  ansible.builtin.file:
-    path: "{{ docmost_dir }}"
-    state: absent
