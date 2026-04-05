@@ -41,13 +41,6 @@
         mode: "0644"
       loop: "{{ podman_users }}"
 
-    - name: Add podman users to systemd-journal group
-      ansible.builtin.user:
-        name: "{{ item }}"
-        groups: systemd-journal
-        append: true
-      loop: "{{ podman_users }}"
-
 - name: Run podman system migrate for each user (applies new uid/gid maps)
   ansible.builtin.command: podman system migrate
   become: true
