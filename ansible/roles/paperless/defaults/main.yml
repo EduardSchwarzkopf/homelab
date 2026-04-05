@@ -1,0 +1,25 @@
+---
+paperless_app_name: paperless
+paperless_image: ghcr.io/paperless-ngx/paperless-ngx:latest
+paperless_redis_image: docker.io/library/redis:8
+
+paperless_port: 8000
+paperless_app_domain: "{{ paperless_app_name }}.{{ lan_domain }}"
+paperless_url: "https://{{ paperless_app_domain }}"
+
+paperless_service_user: "{{ paperless_app_name }}"
+paperless_mount_dir: /mnt/paperless
+paperless_data_dir: "{{ paperless_mount_dir }}/data"
+paperless_media_dir: "{{ paperless_mount_dir }}/media"
+paperless_consume_dir: "{{ paperless_mount_dir }}/consume"
+paperless_export_dir: "{{ paperless_mount_dir }}/export"
+
+paperless_db_name: "{{ paperless_app_name }}"
+paperless_db_user: "{{ paperless_app_name }}"
+
+paperless_timezone: Europe/Berlin
+paperless_ocr_language: deu
+
+# SMB
+paperless_smb_enabled: true
+paperless_smb_share_name: consume

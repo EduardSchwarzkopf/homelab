@@ -4,8 +4,13 @@ resource "proxmox_virtual_environment_vm" "data_disk_vm" {
   node_name = var.proxmox_node_name
   started   = false
   on_boot   = false
-  tags      = ["data-vm", "do-not-start", "${var.vm_name}", "backup-tier-${each.value.backup_tier}"]
-  pool_id   = "tier-${each.value.backup_tier}"
+  tags = [
+    "type-disk_vm",
+    "do_not_start",
+    "consumer_vm-${var.vm_name}",
+    "backup_tier-${each.value.backup_tier}"
+  ]
+  pool_id = "tier-${each.value.backup_tier}"
 
   disk {
     datastore_id = each.value.datastore_id
@@ -15,6 +20,6 @@ resource "proxmox_virtual_environment_vm" "data_disk_vm" {
   }
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 }

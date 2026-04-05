@@ -23,8 +23,18 @@
     database_user: "{{ docmost_db_user }}"
     database_user_password: "{{ docmost_db_password }}"
 
+- name: Setup podman user
+  ansible.builtin.import_role:
+    name: podman
+    tasks_from: setup_rootless_users
+  vars:
+    podman_users:
+      - "{{ docmost_service_user }}"
+
+- name: Setup directories
+  ansible.builtin.import_tasks: directories.yml
+
 - name: Install Docmost
-  become: true
   ansible.builtin.import_tasks: install.yml
 
 - name: Configure NPM proxy host

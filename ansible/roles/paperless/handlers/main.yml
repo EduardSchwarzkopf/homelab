@@ -1,0 +1,7 @@
+---
+- name: Restart smbd
+  become: true
+  ansible.builtin.service:
+    name: smbd
+    state: restarted
+  listen: "restart smbd"

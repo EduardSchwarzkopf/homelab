@@ -3,7 +3,7 @@ docmost_quadlet_dir: /etc/containers/systemd
 
 docmost_app_name: "docmost"
 docmost_data_dir: "/mnt/docmost_data"
-docmost_pod_user_id: 1000
+docmost_service_user: "{{ docmost_app_name }}"
 
 docmost_version: latest
 dockmost_redis_version: 7

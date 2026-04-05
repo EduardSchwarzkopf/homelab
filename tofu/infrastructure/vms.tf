@@ -7,6 +7,12 @@ locals {
   default_os_disk_size         = 10
 
   virtual_machines = {
+    utility = {
+      role         = "Utility Server"
+      cpu_cores    = 2
+      memory_gb    = 2
+      os_disk_size = 15
+    }
     office = {
       role         = "Productivity Applications"
       cpu_cores    = 4
@@ -14,6 +20,11 @@ locals {
       os_disk_size = 20
       data_disk = {
         docmost = {
+          datastore_id = local.nas_datastore_id
+          size         = 100
+          backup_tier  = 2
+        }
+        paperless = {
           datastore_id = local.nas_datastore_id
           size         = 100
           backup_tier  = 2

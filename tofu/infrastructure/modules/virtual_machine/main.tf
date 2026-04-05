@@ -25,7 +25,7 @@ resource "proxmox_virtual_environment_vm" "server" {
   Notes:       Managed by OpenTofu. Do not edit in UI.
 EOF
 
-  tags = concat(data.proxmox_virtual_environment_vm.template.tags, ["env-${var.environment}"], var.use_gpu ? ["gpu"] : [], var.tags)
+  tags = concat(data.proxmox_virtual_environment_vm.template.tags, ["type-server", "env-${var.environment}"], var.use_gpu ? ["gpu"] : [], var.tags)
 
   clone {
     vm_id     = var.clone_vm_id

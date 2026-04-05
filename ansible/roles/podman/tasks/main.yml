@@ -21,12 +21,6 @@
     - name: Configure storage
       ansible.builtin.import_tasks: storage.yml
 
-    - name: Configure rootless Podman for users
-      ansible.builtin.import_tasks: rootless.yml
-      when:
-        - podman_rootless
-        - podman_users | default([]) | length > 0
-
     - name: Configure Podman socket
       ansible.builtin.import_tasks: socket.yml
       when: podman_socket_enabled

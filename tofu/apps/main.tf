@@ -8,14 +8,6 @@ locals {
         forward_port = 8081
       }
     }
-    fritz = {
-      create_database = false
-      proxy = {
-        domain_names = ["fritz.${local.lan_domain}"]
-        forward_host = "192.168.178.1"
-        forward_port = 80
-      }
-    }
     paperless = {
       create_database = true
       proxy = {

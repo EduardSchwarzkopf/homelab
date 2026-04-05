@@ -1,0 +1,57 @@
+---
+- name: Setup rootless podman users
+  become: true
+  block:
+    - name: Install acl (required for unprivileged become)
+      ansible.builtin.apt:
+        name: acl
+        state: present
+
+    - name: Ensure users exist
+      ansible.builtin.user:
+        name: "{{ item }}"
+        shell: /sbin/nologin
+        state: present
+        create_home: true
+      loop: "{{ podman_users }}"
+
+    - name: Enable lingering for rootless systemd services
+      ansible.builtin.command: loginctl enable-linger {{ item }}
+      args:
+        creates: "/var/lib/systemd/linger/{{ item }}"
+      loop: "{{ podman_users }}"
+
+    - name: Ensure subuid entries exist for users
+      ansible.builtin.lineinfile:
+        path: /etc/subuid
+        line: "{{ item }}:100000:65536"
+        regexp: "^{{ item }}:"
+        state: present
+        create: true
+        mode: "0644"
+      loop: "{{ podman_users }}"
+
+    - name: Ensure subgid entries exist for users
+      ansible.builtin.lineinfile:
+        path: /etc/subgid
+        line: "{{ item }}:100000:65536"
+        regexp: "^{{ item }}:"
+        state: present
+        create: true
+        mode: "0644"
+      loop: "{{ podman_users }}"
+
+    - name: Add podman users to systemd-journal group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: systemd-journal
+        append: true
+      loop: "{{ podman_users }}"
+
+- name: Run podman system migrate for each user (applies new uid/gid maps)
+  ansible.builtin.command: podman system migrate
+  become: true
+  become_user: "{{ item }}"
+  loop: "{{ podman_users }}"
+  changed_when: false
+  failed_when: false
