@@ -7,7 +7,7 @@
   listen: "restart podman"
 
 - name: Enable podman socket for users
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: podman.socket
     state: started
     enabled: true

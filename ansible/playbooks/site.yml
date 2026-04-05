@@ -1,14 +1,14 @@
 ---
-# - name: Setup Proxy Hosts
-#   ansible.builtin.import_playbook: proxy.yml
+- name: Setup Proxy Hosts
+  ansible.builtin.import_playbook: proxy.yml
 
-# - name: Install and configure Podman
-#   hosts: podman_hosts
-#   roles:
-#     - role: podman
+- name: Install and configure Podman
+  hosts: podman_hosts
+  roles:
+    - role: podman
 
 - name: Deploy Applications on office Server via Podman
   hosts: office
   roles:
-    # - role: paperless
+    - role: paperless
     - role: docmost

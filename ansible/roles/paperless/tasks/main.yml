@@ -34,20 +34,12 @@
 - name: Setup directories
   ansible.builtin.import_tasks: directories.yml
 
-- name: Deploy containers
-  ansible.builtin.import_tasks: containers.yml
+- name: Deploy application
+  ansible.builtin.import_tasks: install.yml
 
 - name: Setup SMB
   ansible.builtin.import_tasks: smb.yml
   when: paperless_smb_enabled
-
-- name: Wait for {{ paperless_app_name }} to be reachable on port {{ paperless_port }}
-  ansible.builtin.wait_for:
-    host: "{{ ansible_host }}"
-    port: "{{ paperless_port }}"
-    state: started
-    timeout: 120
-    delay: 10
 
 - name: Configure NPM proxy host
   ansible.builtin.import_role:

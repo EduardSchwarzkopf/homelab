@@ -3,7 +3,7 @@
 # Useful for tools like Portainer, Compose, or any Docker SDK clients.
 
 - name: Enable and start podman.socket (system-wide / rootful)
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: podman.socket
     state: started
     enabled: true
@@ -17,7 +17,7 @@
     force: true
 
 - name: Enable user-level podman.socket for rootless users
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: podman.socket
     state: started
     enabled: true

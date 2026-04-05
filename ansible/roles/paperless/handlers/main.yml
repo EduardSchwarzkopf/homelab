@@ -4,4 +4,13 @@
   ansible.builtin.service:
     name: smbd
     state: restarted
-  listen: "restart smbd"
+
+- name: Manage systemd as service user
+  become: true
+  become_user: "{{ paperless_service_user }}"
+  block:
+    - name: Restart docmost
+      listen: "restart paperless"
+      ansible.builtin.systemd_service:
+        name: paperless.service
+        state: restarted
