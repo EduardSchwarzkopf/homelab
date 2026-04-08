@@ -4,9 +4,38 @@
     name: os_debian
     tasks_from: setup_additional_disks.yml
   vars:
-    os_disks:
+    disks:
       - scsi_num: 1
         mount_path: "{{ docmost_data_dir }}"
+
+- name: Generate and store secrets in Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ docmost_app_name }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: app_secret
+        length: 48
+      - key: db_password
+        length: 32
+      - key: db_user
+        value: "{{ docmost_db_user }}"
+
+- name: Fetch docmost secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ docmost_app_name }}"
+    vault_secret_mapping:
+      - key: app_secret
+        var_name: docmost_app_secret
+      - key: db_password
+        var_name: docmost_db_password
+      - key: db_user
+        var_name: docmost_db_user
 
 - name: Generate and store docmost secrets in vault
   ansible.builtin.import_tasks: secrets_generate.yml
@@ -26,10 +55,10 @@
 - name: Setup podman user
   ansible.builtin.import_role:
     name: podman
-    tasks_from: setup_rootless_users
+    tasks_from: init_podman_user
   vars:
-    podman_users:
-      - "{{ docmost_service_user }}"
+    podman_user:
+      name: "{{ docmost_service_user }}"
 
 - name: Setup directories
   ansible.builtin.import_tasks: directories.yml
