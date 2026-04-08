@@ -33,7 +33,7 @@
 
 - name: Generate private variable for instance with secrets
   ansible.builtin.set_fact:
-    database_data_dir: "{{ database_mount_dir }}/data"
+    database_data_dir: "{{ database_mount_dir }}/pgdata"
     instance_secrets:
       password: "{{ database_root_password }}"
       db_user: "{{ database_db_user }}"
@@ -51,7 +51,7 @@
 - name: Ensure data directory exists for {{ instance.name }}
   become: true
   ansible.builtin.file:
-    path: "{{ database_mount_dir }}/data"
+    path: "{{ database_data_dir }}"
     state: directory
     owner: "{{ postgres_service_user }}"
     group: "{{ postgres_service_user }}"
@@ -66,6 +66,12 @@
   become: true
   become_user: "{{ postgres_service_user }}"
   block:
+    - name: Create podman secret for {{ instance.name }}
+      containers.podman.podman_secret:
+        name: "{{ instance.name }}_pg_password"
+        data: "{{ instance_secrets.password }}"
+        state: present
+
     - name: Create Quadlet files
       ansible.builtin.template:
         src: "{{ item.src }}"

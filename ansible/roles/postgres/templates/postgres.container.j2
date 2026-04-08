@@ -7,7 +7,7 @@ Image={{ instance.image }}
 ContainerName={{ instance.name }}
 PublishPort={{ instance.port }}:5432
 Volume={{ database_data_dir }}:/var/lib/postgresql/data
-Environment=POSTGRES_PASSWORD={{ instance_secrets.password }}
+Secret={{ instance.name }}_pg_password,type=env,target=POSTGRES_PASSWORD
 Environment=POSTGRES_USER={{ instance_secrets.db_user }}
 {% if instance.extra_env is defined %}
 {% for key, value in instance.extra_env.items() %}
