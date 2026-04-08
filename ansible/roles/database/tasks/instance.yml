@@ -1,0 +1,54 @@
+---
+- name: Setup disks for databases
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: "{{ instance.scsi_num }}"
+        mount_path: "{{ instance.data_dir }}"
+
+- name: Ensure data directory exists for {{ instance.name }}
+  ansible.builtin.file:
+    path: "{{ instance.data_dir }}"
+    state: directory
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0700"
+  become: true
+
+- name: Create Quadlet volume file for {{ instance.name }}
+  ansible.builtin.template:
+    src: postgres.volume.j2
+    dest: "{{ postgres_service_user_home }}/.config/containers/systemd/{{ instance.name }}.volume"
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0644"
+  become: true
+
+- name: Create Quadlet container file for {{ instance.name }}
+  ansible.builtin.template:
+    src: postgres.container.j2
+    dest: "{{ postgres_service_user_home }}/.config/containers/systemd/{{ instance.name }}.container"
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0644"
+  become: true
+
+- name: Reload daemon and start {{ instance.name }}
+  ansible.builtin.shell: |
+    export HOME={{ postgres_service_user_home }}
+    export XDG_RUNTIME_DIR=/run/user/{{ postgres_service_user_uid }}
+    export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ postgres_service_user_uid }}/bus
+    systemctl --user daemon-reload
+    systemctl --user enable --now {{ instance.name }}.service
+  become: true
+  become_user: "{{ postgres_service_user }}"
+
+- name: Wait for {{ instance.name }} to be reachable on port {{ instance.port }}
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: "{{ instance.port }}"
+    state: started
+    timeout: 60
+    delay: 5

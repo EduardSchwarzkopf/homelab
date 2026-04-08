@@ -1,0 +1,12 @@
+---
+- name: Ensure {{ immich_app_name }} directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ immich_service_user }}"
+    group: "{{ immich_service_user }}"
+    mode: "0755"
+  become: true
+  loop:
+    - "{{ immich_upload_dir }}"
+    - "{{ immich_db_dir }}"

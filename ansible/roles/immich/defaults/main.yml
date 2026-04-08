@@ -1,0 +1,17 @@
+immich_app_name: immich
+immich_service_user: immich
+immich_version: release
+immich_port: 2283
+
+immich_image: "ghcr.io/immich-app/immich-server:{{ immich_version }}"
+immich_ml_image: "ghcr.io/immich-app/immich-machine-learning:{{ immich_version }}"
+immich_redis_image: "docker.io/valkey/valkey:9"
+immich_db_image: "ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1"
+
+immich_mount_dir: /mnt/immich
+immich_upload_dir: "{{ immich_mount_dir }}/upload"
+immich_db_dir: "{{ immich_mount_dir }}/db"
+
+immich_db_name: immich
+immich_db_user: postgres
+immich_db_password: "" # generated in secrets_generate.yml

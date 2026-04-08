@@ -1,0 +1,63 @@
+---
+- name: Setup user
+  become: true
+  block:
+    - name: Set home directory fact
+      ansible.builtin.set_fact:
+        podman_user_home: "{{ podman_user.home | default('/home/' + podman_user.name) }}"
+
+    - name: Ensure user {{ podman_user.name }} exists
+      ansible.builtin.user:
+        name: "{{ podman_user.name }}"
+        home: "{{ podman_user_home }}"
+        shell: /sbin/nologin
+        state: present
+        create_home: true
+
+    - name: Enable lingering for {{ podman_user.name }}
+      ansible.builtin.command: loginctl enable-linger {{ podman_user.name }}
+      args:
+        creates: "/var/lib/systemd/linger/{{ podman_user.name }}"
+      notify: Restart systemd-logind
+
+    - name: Ensure subuid entry for {{ podman_user.name }}
+      ansible.builtin.lineinfile:
+        path: /etc/subuid
+        line: "{{ podman_user.name }}:100000:65536"
+        regexp: "^{{ podman_user.name }}:"
+        state: present
+        create: true
+        mode: "0644"
+
+    - name: Ensure subgid entry for {{ podman_user.name }}
+      ansible.builtin.lineinfile:
+        path: /etc/subgid
+        line: "{{ podman_user.name }}:100000:65536"
+        regexp: "^{{ podman_user.name }}:"
+        state: present
+        create: true
+        mode: "0644"
+
+    - name: Add {{ podman_user.name }} to systemd-journal group
+      ansible.builtin.user:
+        name: "{{ podman_user.name }}"
+        groups: systemd-journal
+        append: true
+
+    - name: Ensure Quadlet systemd directory exists
+      ansible.builtin.file:
+        path: "{{ podman_user_home }}/.config/containers/systemd"
+        state: directory
+        owner: "{{ podman_user.name }}"
+        group: "{{ podman_user.name }}"
+        mode: "0755"
+
+    - name: Enable podman socket for {{ podman_user.name }}
+      become: true
+      become_user: "{{ podman_user.name }}"
+      ansible.builtin.systemd_service:
+        name: podman.socket
+        state: started
+        enabled: true
+        scope: user
+      when: podman_socket_enabled | default(false)

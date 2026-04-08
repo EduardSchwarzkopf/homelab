@@ -1,0 +1,19 @@
+postgres_service_user: postgres
+postgres_instances: []
+# Example:
+# postgres_instances:
+#   - name: postgres
+#     image: docker.io/library/postgres:16
+#     port: 5432
+#     data:
+#       - mount_path: /mnt/postgres/data
+#         scsi_num: 2
+#     password: "changeme"
+#
+#   - name: postgres-immich
+#     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+#     port: 5433
+#     data:
+#       - mount_path: /mnt/postgres/immich/data
+#         scsi_num: 3
+#     password: "changeme"

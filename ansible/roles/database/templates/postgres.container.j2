@@ -1,0 +1,24 @@
+[Unit]
+Description={{ instance.name }} Postgres container
+After=network-online.target
+
+[Container]
+Image={{ instance.image }}
+ContainerName={{ instance.name }}
+PublishPort={{ instance.port }}:5432
+Volume={{ instance.name }}.volume:/var/lib/postgresql/data
+Environment=POSTGRES_PASSWORD={{ instance.password }}
+Environment=POSTGRES_USER={{ instance.db_user | default('postgres') }}
+Environment=POSTGRES_DB={{ instance.db_name | default('postgres') }}
+{% if instance.extra_env is defined %}
+{% for key, value in instance.extra_env.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+{% endif %}
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

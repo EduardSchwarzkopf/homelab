@@ -1,0 +1,58 @@
+---
+- name: Install {{ immich_app_name }} with Quadlet
+  become: true
+  block:
+    - name: Gather {{ immich_service_user }} uid/gid
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ immich_service_user }}"
+
+    - name: Set uid/gid/home facts
+      ansible.builtin.set_fact:
+        immich_service_user_uid: "{{ ansible_facts.getent_passwd[immich_service_user][1] }}"
+        immich_service_user_gid: "{{ ansible_facts.getent_passwd[immich_service_user][2] }}"
+        immich_service_user_home: "{{ ansible_facts.getent_passwd[immich_service_user][4] }}"
+
+    - name: Create Quadlet files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ immich_service_user_home }}/.config/containers/systemd/{{ item.dest }}"
+        owner: "{{ immich_service_user }}"
+        group: "{{ immich_service_user }}"
+        mode: "0644"
+      loop:
+        - { src: immich.network.j2, dest: "{{ immich_app_name }}.network" }
+        - {
+            src: immich-redis.volume.j2,
+            dest: "{{ immich_app_name }}-redis.volume",
+          }
+        - {
+            src: immich-model-cache.volume.j2,
+            dest: "{{ immich_app_name }}-model-cache.volume",
+          }
+        - {
+            src: immich-redis.container.j2,
+            dest: "{{ immich_app_name }}-redis.container",
+          }
+        - {
+            src: immich-db.container.j2,
+            dest: "{{ immich_app_name }}-db.container",
+          }
+        - {
+            src: immich-ml.container.j2,
+            dest: "{{ immich_app_name }}-ml.container",
+          }
+        - { src: immich.container.j2, dest: "{{ immich_app_name }}.container" }
+
+- name: Reload daemon and enable {{ immich_app_name }} services
+  ansible.builtin.shell: |
+    export HOME={{ immich_service_user_home }}
+    export XDG_RUNTIME_DIR=/run/user/{{ immich_service_user_uid }}
+    export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ immich_service_user_uid }}/bus
+    systemctl --user daemon-reload
+    systemctl --user enable --now {{ immich_app_name }}-redis.service
+    systemctl --user enable --now {{ immich_app_name }}-db.service
+    systemctl --user enable --now {{ immich_app_name }}-ml.service
+    systemctl --user enable --now {{ immich_app_name }}.service
+  become: true
+  become_user: "{{ immich_service_user }}"
