@@ -27,6 +27,7 @@
 
       - domain_names:
           - proxmox.{{ lan_domain }}
+          - pve.{{ lan_domain }}
         forward_host: "{{ hostvars['homeserver'].ansible_host }}"
         forward_port: 8006
         forward_scheme: https
@@ -36,6 +37,14 @@
         forward_host: "{{ hostvars['pihole'].ansible_host }}"
         forward_port: 8443
         forward_scheme: https
+
+      - domain_names:
+          - pbs.{{ lan_domain }}
+        forward_host: proxmox-backup-server
+        forward_port: 8007
+        forward_scheme: https
+        block_exploits: false
+        allow_websocket_upgrade: true
 
   tasks:
     - name: Configure proxy hosts
