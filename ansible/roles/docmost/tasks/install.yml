@@ -24,14 +24,4 @@
             src: docmost.container.j2,
             dest: "{{ docmost_app_name }}.container",
           }
-
-    - name: Enable and start {{ docmost_app_name }} services
-      ansible.builtin.systemd_service:
-        name: "{{ item }}"
-        daemon_reload: true
-        state: started
-        enabled: true
-        scope: user
-      loop:
-        - "{{ docmost_app_name }}-redis.service"
-        - "{{ docmost_app_name }}.service"
+      notify: Restart service

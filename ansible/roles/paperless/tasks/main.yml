@@ -49,8 +49,8 @@
 
 - name: Provision {{ paperless_app_name }} database
   ansible.builtin.import_role:
-    name: database
-    tasks_from: provision_postgres_database.yml
+    name: postgres
+    tasks_from: provision_database.yml
   vars:
     database_name: "{{ paperless_db_name }}"
     database_user: "{{ paperless_db_user }}"

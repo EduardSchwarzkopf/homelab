@@ -1,9 +1,13 @@
 ---
-- name: Manage systemd as service user
+- name: Restart service
   become: true
   become_user: "{{ docmost_service_user }}"
-  block:
-    - name: Restart docmost
-      ansible.builtin.systemd_service:
-        name: docmost.service
-        state: restarted
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    daemon_reload: true
+    state: restarted
+    scope: user
+  loop:
+    - "{{ docmost_app_name }}-redis.service"
+    - "{{ docmost_app_name }}.service"
+  listen: Restart service

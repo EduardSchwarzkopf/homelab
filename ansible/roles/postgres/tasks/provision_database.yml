@@ -5,10 +5,11 @@
   no_log: true
 
 - name: Ensure psycopg2 is installed (required for postgresql modules)
+  become: true
   ansible.builtin.apt:
     name: python3-psycopg2
     state: present
-  delegate_to: postgres_server
+  delegate_to: "{{ postgres_host }}"
 
 - name: "Ensure database {{ database_name }} exists on {{ postgres_host }}"
   community.postgresql.postgresql_db:
@@ -18,7 +19,7 @@
     login_port: "{{ postgres_port }}"
     login_user: "{{ database_credentials.username }}"
     login_password: "{{ database_credentials.password }}"
-  delegate_to: postgres_server
+  delegate_to: "{{ postgres_host }}"
 
 - name: "Ensure user {{ database_user }} exists on {{ postgres_host }}"
   community.postgresql.postgresql_user:
@@ -29,7 +30,7 @@
     login_port: "{{ postgres_port }}"
     login_user: "{{ database_credentials.username }}"
     login_password: "{{ database_credentials.password }}"
-  delegate_to: postgres_server
+  delegate_to: "{{ postgres_host }}"
 
 - name: "Grant {{ database_user }} full privileges on {{ database_name }}"
   community.postgresql.postgresql_privs:
@@ -42,7 +43,7 @@
     login_port: "{{ postgres_port }}"
     login_user: "{{ database_credentials.username }}"
     login_password: "{{ database_credentials.password }}"
-  delegate_to: postgres_server
+  delegate_to: "{{ postgres_host }}"
 
 - name: "Grant {{ database_user }} privileges on public schema in {{ database_name }}"
   community.postgresql.postgresql_privs:
@@ -56,4 +57,4 @@
     login_port: "{{ postgres_port }}"
     login_user: "{{ database_credentials.username }}"
     login_password: "{{ database_credentials.password }}"
-  delegate_to: postgres_server
+  delegate_to: "{{ postgres_host }}"

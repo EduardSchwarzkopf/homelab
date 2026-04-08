@@ -1,0 +1,5 @@
+- name: Deploy productivity apps on office server via Podman
+  hosts: office
+  roles:
+    - role: paperless
+    - role: docmost
