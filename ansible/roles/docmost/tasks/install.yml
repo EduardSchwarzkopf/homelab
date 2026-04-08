@@ -3,14 +3,6 @@
   become: true
   become_user: "{{ docmost_service_user }}"
   block:
-    - name: Ensure Quadlet systemd directory exists
-      ansible.builtin.file:
-        path: "/home/{{ docmost_service_user }}/.config/containers/systemd"
-        state: directory
-        owner: "{{ docmost_service_user }}"
-        group: "{{ docmost_service_user }}"
-        mode: "0755"
-
     - name: Create Quadlet files
       ansible.builtin.template:
         src: "{{ item.src }}"
