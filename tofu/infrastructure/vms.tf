@@ -11,7 +11,7 @@ locals {
       role         = "Utility Server"
       cpu_cores    = 2
       memory_gb    = 2
-      os_disk_size = 15
+      os_disk_size = 20
     }
     database = {
       role         = "Databases"
