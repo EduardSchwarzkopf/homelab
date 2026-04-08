@@ -11,10 +11,6 @@
     - name: Install extra tools (Buildah, Skopeo)
       ansible.builtin.import_tasks: tools.yml
 
-    - name: Install podman-compose
-      ansible.builtin.import_tasks: compose.yml
-      when: podman_install_compose
-
     - name: Configure registries
       ansible.builtin.import_tasks: registries.yml
 

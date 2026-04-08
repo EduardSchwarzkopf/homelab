@@ -8,25 +8,9 @@
       - gnupg
       - lsb-release
       - uidmap # required for rootless
+      - acl # required for rootless become
       - fuse-overlayfs # required for rootless overlay storage
       - slirp4netns # required for rootless networking
     state: present
     update_cache: true
   when: ansible_facts["os_family"] == "Debian"
-
-- name: Add Kubic repository for Podman (Ubuntu < 22.04)
-  ansible.builtin.apt_repository:
-    repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_facts['distribution_version'] }}/ /"
-    state: present
-    filename: kubic-libcontainers
-  when:
-    - ansible_facts["distribution"] == "Ubuntu"
-    - ansible_facts["distribution_version"] is version('22.04', '<')
-
-- name: Add Kubic GPG key (Ubuntu < 22.04)
-  ansible.builtin.apt_key:
-    url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_facts['distribution_version'] }}/Release.key"
-    state: present
-  when:
-    - ansible_facts["distribution"] == "Ubuntu"
-    - ansible_facts["distribution_version"] is version('22.04', '<')

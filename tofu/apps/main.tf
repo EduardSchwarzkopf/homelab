@@ -31,6 +31,7 @@ locals {
         forward_host   = "proxmox-backup-server.${local.local_tld}"
         forward_port   = 8007
         block_exploits = false
+        forward_scheme = "https"
       }
     }
     pgadmin = {

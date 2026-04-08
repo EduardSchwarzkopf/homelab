@@ -13,6 +13,38 @@ locals {
       memory_gb    = 2
       os_disk_size = 15
     }
+    database = {
+      role         = "Databases"
+      cpu_cores    = 4
+      memory_gb    = 8
+      os_disk_size = 20
+      data_disk = {
+        postgres = {
+          datastore_id = local.nas_datastore_id
+          size         = 20
+          backup_tier  = 1
+        }
+        postgres-vectorchord = {
+          datastore_id = local.nas_datastore_id
+          size         = 10
+          backup_tier  = 2
+        }
+      }
+    }
+    media = {
+      role         = "Media Applications"
+      cpu_cores    = 2
+      memory_gb    = 4
+      os_disk_size = 20
+      gpu          = true
+      data_disk = {
+        # immich = {
+        #   datastore_id = local.nas_datastore_id
+        #   size         = 1000
+        #   backup_tier  = 2
+        # }
+      }
+    }
     office = {
       role         = "Productivity Applications"
       cpu_cores    = 4
@@ -50,6 +82,7 @@ module "virtual_machine" {
   clone_vm_id          = try(each.value.clone_vm_id, local.debian_vm_id)
   cpu_cores            = each.value.cpu_cores
   memory_gb            = each.value.memory_gb
+  use_gpu              = try(each.value.use_gpu, false)
   os_disk_datastore_id = try(each.value.os_disk_datastore_id, local.default_os_disk_datastore_id)
   os_disk_size         = try(each.value.os_disk_size, local.default_os_disk_size)
   ssh_authorized_keys  = [data.vault_kv_secret_v2.authorized_key.data["public_key"]]

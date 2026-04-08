@@ -1,5 +1,5 @@
 ---
-- name: Setup additiona disks
+- name: Setup additional disks
   become: true
   block:
     - name: Install required disk tools
@@ -17,7 +17,7 @@
         state: present
         part_start: "0%"
         part_end: "100%"
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         label: "{{ item.mount_path }}"
 
@@ -26,7 +26,7 @@
         fstype: ext4
         dev: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}-part1"
         force: false
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         label: "{{ item.mount_path }}"
 
@@ -35,7 +35,7 @@
         lsblk -ln -o MOUNTPOINT "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}-part1" | grep -v '^$' | head -1
       register: current_mounts
       changed_when: false
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         label: "{{ item.mount_path }}"
 
@@ -43,7 +43,7 @@
       ansible.posix.mount:
         path: "{{ current_mounts.results[idx].stdout }}"
         state: unmounted
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         index_var: idx
         label: "{{ item.mount_path }}"
@@ -55,7 +55,7 @@
       ansible.posix.mount:
         path: "{{ current_mounts.results[idx].stdout }}"
         state: absent
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         index_var: idx
         label: "{{ item.mount_path }}"
@@ -70,6 +70,6 @@
         fstype: ext4
         opts: defaults,nofail
         state: mounted
-      loop: "{{ os_disks }}"
+      loop: "{{ disks }}"
       loop_control:
         label: "{{ item.mount_path }}"
