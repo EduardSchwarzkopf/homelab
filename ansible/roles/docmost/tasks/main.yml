@@ -45,8 +45,8 @@
 
 - name: Provision docmost database
   include_role:
-    name: postgres
-    tasks_from: provision_database.yml
+    name: database
+    tasks_from: provision_postgres_database.yml
   vars:
     database_name: "{{ docmost_db_name }}"
     database_user: "{{ docmost_db_user }}"
