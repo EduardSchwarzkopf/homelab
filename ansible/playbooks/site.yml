@@ -2,6 +2,9 @@
 - name: Setup Proxy Hosts
   ansible.builtin.import_playbook: proxy.yml
 
+- name: Setup Databases
+  ansible.builtin.import_playbook: databases.yml
+
 - name: Deploy productivity apps on office server via Podman
   hosts: office
   roles:

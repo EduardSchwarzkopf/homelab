@@ -1,0 +1,2 @@
+postgres_vault_secret_basepath: "databases"
+postgres_service_user_home_dir: "/home/{{postgres_service_user}}"

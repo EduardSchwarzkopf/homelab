@@ -1,6 +1,7 @@
 ---
 - name: Setup user
   become: true
+  become_user: root
   block:
     - name: Set home directory fact
       ansible.builtin.set_fact:
@@ -51,6 +52,7 @@
         owner: "{{ podman_user.name }}"
         group: "{{ podman_user.name }}"
         mode: "0755"
+        recurse: true
 
     - name: Enable podman socket for {{ podman_user.name }}
       become: true

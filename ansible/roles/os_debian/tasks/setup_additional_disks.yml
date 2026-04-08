@@ -1,6 +1,7 @@
 ---
 - name: Setup additional disks
   become: true
+  become_user: root
   block:
     - name: Install required disk tools
       ansible.builtin.apt:

@@ -6,10 +6,9 @@ After=network-online.target
 Image={{ instance.image }}
 ContainerName={{ instance.name }}
 PublishPort={{ instance.port }}:5432
-Volume={{ instance.name }}.volume:/var/lib/postgresql/data
-Environment=POSTGRES_PASSWORD={{ instance.password }}
-Environment=POSTGRES_USER={{ instance.db_user | default('postgres') }}
-Environment=POSTGRES_DB={{ instance.db_name | default('postgres') }}
+Volume={{ database_data_dir }}:/var/lib/postgresql/data
+Environment=POSTGRES_PASSWORD={{ instance_secrets.password }}
+Environment=POSTGRES_USER={{ instance_secrets.db_user }}
 {% if instance.extra_env is defined %}
 {% for key, value in instance.extra_env.items() %}
 Environment={{ key }}={{ value }}

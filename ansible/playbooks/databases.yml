@@ -1,21 +1,17 @@
 - name: Setup databases
   hosts: database
   roles:
-    - role: database
+    - role: postgres
   vars:
     postgres_instances:
       - name: postgres
         image: docker.io/library/postgres:17.6
-        scsi_num: 2
+        scsi_num: 1
         port: 5432
-        data_dir: /mnt/db/postgres
-        password: "{{ vault_postgres_password }}"
 
-      - name: postgres-immich
-        image: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
-        scsi_num: 3
+      - name: postgres-vectorchord
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+        scsi_num: 2
         port: 5433
-        data_dir: /mnt/db/immich
-        password: "{{ vault_immich_db_password }}"
         extra_env:
           POSTGRES_INITDB_ARGS: "--data-checksums"
