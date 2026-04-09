@@ -7,11 +7,11 @@
       - name: postgres
         image: docker.io/library/postgres:17.6
         scsi_num: 1
-        port: 5432
+        port: "{{ postgres_port }}"
 
       - name: postgres-vectorchord
         image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0 # FROM ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1
         scsi_num: 2
-        port: 5433
+        port: "{{ postgres_vectorchord_port }}"
         extra_env:
           POSTGRES_INITDB_ARGS: "--data-checksums"
