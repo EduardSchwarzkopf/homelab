@@ -38,11 +38,11 @@ locals {
       os_disk_size = 20
       gpu          = true
       data_disk = {
-        # immich = {
-        #   datastore_id = local.nas_datastore_id
-        #   size         = 1000
-        #   backup_tier  = 2
-        # }
+        immich = {
+          datastore_id = local.nas_datastore_id
+          size         = 1000
+          backup_tier  = 2
+        }
       }
     }
     office = {
