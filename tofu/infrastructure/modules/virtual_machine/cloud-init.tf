@@ -4,7 +4,7 @@ locals {
 }
 
 resource "terraform_data" "cloud_config" {
-  input = templatefile("${local.templates_dir}/cloud-config.tpl.yaml", {
+  input = templatefile("${local.templates_dir}/cloud-config.yaml.tftpl", {
     hostname            = var.vm_name
     ssh_authorized_keys = var.ssh_authorized_keys
     packages            = var.cloud_init.packages
