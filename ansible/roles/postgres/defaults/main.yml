@@ -1,4 +1,5 @@
 postgres_service_user: postgres
+postgres_instance_name: postgres
 postgres_instances: []
 # Example:
 # postgres_instances:

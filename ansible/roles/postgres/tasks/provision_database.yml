@@ -1,7 +1,11 @@
 # roles/postgres/tasks/provision_database.yml
+- name: Print
+  ansible.builtin.debug:
+    msg: "postgres_instance_name: {{ postgres_instance_name }}"
+
 - name: fetch database credentials
   ansible.builtin.set_fact:
-    database_credentials: "{{ lookup('community.hashi_vault.vault_kv2_get', 'postgres', engine_mount_point=vault_mount_path).secret }}"
+    database_credentials: "{{ lookup('community.hashi_vault.vault_kv2_get', postgres_vault_secret_basepath + '/' + postgres_instance_name, engine_mount_point=vault_mount_path).secret }}"
   no_log: true
 
 - name: Ensure psycopg2 is installed (required for postgresql modules)
@@ -17,8 +21,8 @@
     state: present
     login_host: "{{ postgres_host }}"
     login_port: "{{ postgres_port }}"
-    login_user: "{{ database_credentials.username }}"
-    login_password: "{{ database_credentials.password }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
   delegate_to: "{{ postgres_host }}"
 
 - name: "Ensure user {{ database_user }} exists on {{ postgres_host }}"
@@ -28,8 +32,8 @@
     state: present
     login_host: "{{ postgres_host }}"
     login_port: "{{ postgres_port }}"
-    login_user: "{{ database_credentials.username }}"
-    login_password: "{{ database_credentials.password }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
   delegate_to: "{{ postgres_host }}"
 
 - name: "Grant {{ database_user }} full privileges on {{ database_name }}"
@@ -41,8 +45,8 @@
     state: present
     login_host: "{{ postgres_host }}"
     login_port: "{{ postgres_port }}"
-    login_user: "{{ database_credentials.username }}"
-    login_password: "{{ database_credentials.password }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
   delegate_to: "{{ postgres_host }}"
 
 - name: "Grant {{ database_user }} privileges on public schema in {{ database_name }}"
@@ -55,6 +59,6 @@
     state: present
     login_host: "{{ postgres_host }}"
     login_port: "{{ postgres_port }}"
-    login_user: "{{ database_credentials.username }}"
-    login_password: "{{ database_credentials.password }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
   delegate_to: "{{ postgres_host }}"
