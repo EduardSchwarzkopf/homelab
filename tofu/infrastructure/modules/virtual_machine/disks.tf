@@ -20,6 +20,6 @@ resource "proxmox_virtual_environment_vm" "data_disk_vm" {
   }
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 }
