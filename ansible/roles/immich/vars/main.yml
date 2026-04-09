@@ -1,0 +1,17 @@
+immich_app_name: immich
+immich_service_user: immich
+immich_app_domain: "{{ immich_app_name }}.{{lan_domain}}"
+
+immich_container_registry: "ghcr.io/immich-app"
+immich_image: "{{ immich_container_registry }}/immich-server:{{ immich_version }}"
+immich_ml_image: "{{ immich_container_registry }}/immich-machine-learning:{{ immich_version }}"
+immich_redis_image: "docker.io/valkey/valkey:{{ immich_valkey_version }}"
+
+immich_mount_dir: /mnt/{{ immich_app_name }}
+immich_upload_dir: "{{ immich_mount_dir }}/upload"
+
+immich_db_name: "{{ immich_app_name }}"
+immich_db_user: "{{ immich_app_name }}"
+immich_db_hostname: "{{ postgres_host }}"
+immich_db_port: "{{ postgres_vectorchord_port }}"
+immich_db_password_secret_name: "{{ immich_app_name }}_db_password"

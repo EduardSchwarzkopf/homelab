@@ -1,3 +1,8 @@
+- name: Deploy media apps on media server via Podman
+  hosts: media
+  roles:
+    - role: immich
+
 - name: Deploy productivity apps on office server via Podman
   hosts: office
   roles:

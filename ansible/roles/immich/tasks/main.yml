@@ -1,41 +1,62 @@
 ---
+- name: Generate and store secrets in Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ immich_app_name }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: db_user
+        value: "{{ immich_db_user }}"
+      - key: db_password
+        length: 32
+
+- name: Fetch docmost secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ immich_app_name }}"
+    vault_secret_mapping:
+      - key: db_user
+        var_name: immich_db_user
+      - key: db_password
+        var_name: immich_db_password
+
+- name: Provision {{ immich_app_name }} database
+  ansible.builtin.import_role:
+    name: postgres
+    tasks_from: provision_database.yml
+  vars:
+    postgres_port: "{{ postgres_vectorchord_port }}"
+    postgres_instance_name: "postgres-vectorchord"
+    database_name: "{{ immich_db_name }}"
+    database_user: "{{ immich_db_user }}"
+    database_user_password: "{{ immich_db_password }}"
+
 - name: Setup disks for {{ immich_app_name }}
   ansible.builtin.import_role:
     name: os_debian
     tasks_from: setup_additional_disks.yml
   vars:
     disks:
-      - scsi_num: 2
+      - scsi_num: 1
         mount_path: "{{ immich_mount_dir }}"
-
-- name: Generate and store {{ immich_app_name }} secrets in vault
-  ansible.builtin.import_tasks: secrets_generate.yml
-
-- name: Fetch {{ immich_app_name }} secrets from vault
-  ansible.builtin.import_tasks: secrets_fetch.yml
 
 - name: Setup podman user
   ansible.builtin.import_role:
     name: podman
-    tasks_from: setup_rootless_users.yml
+    tasks_from: init_podman_user
   vars:
-    podman_users:
-      - name: "{{ immich_service_user }}"
-        home: "/home/{{ immich_service_user }}"
+    podman_user:
+      name: "{{ immich_service_user }}"
 
 - name: Setup directories
   ansible.builtin.import_tasks: directories.yml
 
 - name: Deploy containers
   ansible.builtin.import_tasks: containers.yml
-
-- name: Wait for {{ immich_app_name }} to be reachable on port {{ immich_port }}
-  ansible.builtin.wait_for:
-    host: "{{ ansible_host }}"
-    port: "{{ immich_port }}"
-    state: started
-    timeout: 120
-    delay: 10
 
 - name: Configure NPM proxy host
   ansible.builtin.import_role:
@@ -47,3 +68,4 @@
           - "{{ immich_app_domain }}"
         forward_host: "{{ ansible_host }}"
         forward_port: "{{ immich_port }}"
+        allow_websocket_upgrade: true

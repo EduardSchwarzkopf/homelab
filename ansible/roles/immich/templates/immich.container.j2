@@ -1,21 +1,22 @@
 [Unit]
 Description={{ immich_app_name }} server container
-After=network-online.target {{ immich_app_name }}-redis.service {{ immich_app_name }}-db.service {{ immich_app_name
+After=network-online.target {{ immich_app_name }}-redis.service {{ immich_app_name
 }}-ml.service
-Requires={{ immich_app_name }}-redis.service {{ immich_app_name }}-db.service {{ immich_app_name }}-ml.service
+Requires={{ immich_app_name }}-redis.service {{ immich_app_name }}-ml.service
 
 [Container]
 Image={{ immich_image }}
 ContainerName={{ immich_app_name }}
 Network={{ immich_app_name }}.network
 PublishPort={{ immich_port }}:2283
-Volume={{ immich_upload_dir }}:/data
+Volume={{ immich_mount_dir }}:/data:U
 Volume=/etc/localtime:/etc/localtime:ro
 Environment=IMMICH_VERSION={{ immich_version }}
 Environment=DB_USERNAME={{ immich_db_user }}
-Environment=DB_PASSWORD={{ immich_db_password }}
+Secret={{ immich_db_password_secret_name}},type=env,target=DB_PASSWORD
 Environment=DB_DATABASE_NAME={{ immich_db_name }}
-Environment=DB_HOSTNAME={{ immich_app_name }}-db
+Environment=DB_HOSTNAME={{ immich_db_hostname }}
+Environment=DB_PORT={{ immich_db_port }}
 Environment=REDIS_HOSTNAME={{ immich_app_name }}-redis
 
 [Service]

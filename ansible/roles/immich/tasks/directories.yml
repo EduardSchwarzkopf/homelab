@@ -1,12 +1,10 @@
 ---
 - name: Ensure {{ immich_app_name }} directories exist
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ immich_mount_dir }}"
     state: directory
     owner: "{{ immich_service_user }}"
     group: "{{ immich_service_user }}"
     mode: "0755"
+    recurse: true
   become: true
-  loop:
-    - "{{ immich_upload_dir }}"
-    - "{{ immich_db_dir }}"
