@@ -48,6 +48,15 @@
       - scsi_num: "{{ instance.scsi_num }}"
         mount_path: "{{ database_mount_dir }}"
 
+- name: Ensure mount directory is owned by {{ postgres_service_user }}
+  become: true
+  ansible.builtin.file:
+    path: "{{ database_mount_dir }}"
+    state: directory
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0700"
+
 - name: Ensure data directory exists for {{ instance.name }}
   become: true
   ansible.builtin.file:
@@ -57,10 +66,6 @@
     group: "{{ postgres_service_user }}"
     mode: "0700"
     recurse: true
-
-- name: Show instance values
-  ansible.builtin.debug:
-    msg: "Instance: {{ instance }}"
 
 - name: Setup databases
   become: true
