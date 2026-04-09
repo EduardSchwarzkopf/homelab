@@ -1,4 +1,15 @@
 ---
+- name: Assert domain_names contain no scheme or trailing slash
+  ansible.builtin.assert:
+    that:
+      - item is not match('^https?://')
+      - item is not match('.+/$')
+    fail_msg: >-
+      Invalid domain name "{{ item }}": must be a bare hostname (e.g. "immich.lan.schwarzkopf.center"),
+      not a URL. Remove the scheme and trailing slash.
+    success_msg: "domain_names value '{{ item }}' looks valid"
+  loop: "{{ proxy_host.domain_names }}"
+
 - name: "Check if {{ proxy_host.domain_names | join(', ') }} already exists"
   ansible.builtin.set_fact:
     existing_host: >-
