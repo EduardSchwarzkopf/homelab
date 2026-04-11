@@ -40,7 +40,8 @@
 
       - domain_names:
           - pbs.{{ lan_domain }}
-        forward_host: proxmox-backup-server
+          - backup.{{ lan_domain }}
+        forward_host: "{{ hostvars['backup'].ansible_host }}"
         forward_port: 8007
         forward_scheme: https
         block_exploits: false
