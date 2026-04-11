@@ -35,7 +35,7 @@ locals {
         }
       }
     }
-    pbs = {
+    backup = {
       role         = "Proxmox Backup Server"
       cpu_cores    = 2
       memory_gb    = 4
