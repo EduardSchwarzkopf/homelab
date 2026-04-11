@@ -6,6 +6,10 @@ locals {
   default_os_disk_datastore_id = "vm-os-pool"
   default_os_disk_size         = 10
 
+  pbs_config = {
+    mount_script_filepath = "/tmp/mount-additional-disk.sh"
+  }
+
   virtual_machines = {
     utility = {
       role         = "Utility Server"
@@ -27,6 +31,40 @@ locals {
         postgres-vectorchord = {
           datastore_id = local.nas_datastore_id
           size         = 10
+          backup_tier  = 2
+        }
+      }
+    }
+    pbs = {
+      role         = "Proxmox Backup Server"
+      cpu_cores    = 2
+      memory_gb    = 4
+      os_disk_size = 32
+      tags         = ["backup"]
+      cloud_init = {
+        bootstrap_script = templatefile("${path.module}/data/vms/pbs/bootstrap.sh.tftpl", {
+          config = local.pbs_config
+        })
+
+        packages = ["isc-dhcp-client"]
+        write_files = [
+          {
+            path        = local.pbs_config.mount_script_filepath
+            content     = file("${path.module}/data/scripts/mount-additional-disk.sh")
+            owner       = "root"
+            permissions = "0644"
+          }
+        ]
+      }
+      data_disk = {
+        backup = {
+          datastore_id = local.nas_datastore_id
+          size         = 1500
+          backup_tier  = 0
+        }
+        pbs-config = {
+          datastore_id = "zfs-longhorn"
+          size         = 1
           backup_tier  = 2
         }
       }
@@ -86,6 +124,7 @@ module "virtual_machine" {
   os_disk_datastore_id = try(each.value.os_disk_datastore_id, local.default_os_disk_datastore_id)
   os_disk_size         = try(each.value.os_disk_size, local.default_os_disk_size)
   ssh_authorized_keys  = [data.vault_kv_secret_v2.authorized_key.data["public_key"]]
+  cloud_init           = try(each.value.cloud_init, {})
   additional_disks = can(each.value.data_disk) ? {
     for disk_key, disk in each.value.data_disk : disk_key => {
       datastore_id = disk.datastore_id
