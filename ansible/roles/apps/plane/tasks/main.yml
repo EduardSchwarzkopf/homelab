@@ -19,6 +19,10 @@
         length: 32
       - key: live_server_secret_key
         length: 32
+      - key: aes_secret_key
+        length: 32
+      - key: silo_hmac_secret_key
+        length: 32
 
 - name: Fetch plane secrets from Vault
   ansible.builtin.import_role:
@@ -39,6 +43,10 @@
         var_name: plane_mq_password
       - key: live_server_secret_key
         var_name: plane_live_server_secret_key
+      - key: aes_secret_key
+        var_name: plane_aes_secret_key
+      - key: silo_hmac_secret_key
+        var_name: plane_silo_hmac_secret_key
 
 - name: Provision {{ plane_app_name }} database
   ansible.builtin.import_role:

@@ -1,0 +1,16 @@
+[Unit]
+Requires=web.service api.service space.service admin.service live.service
+After=web.service api.service space.service admin.service live.service
+
+[Container]
+EnvironmentFile=/home/plane/plane/plane.env
+Image=artifacts.plane.so/makeplane/proxy-commercial:v2.4.0
+Network=systemd-plane-nw
+PublishPort={{ plane_http_port }}:80
+PublishPort={{ plane_https_port }}:443
+Volume=/home/plane/plane/proxy/config:/config
+Volume=/home/plane/plane/proxy/data:/data
+Volume=/home/plane/plane/proxy/Caddyfile:/etc/caddy/Caddyfile
+
+[Service]
+Restart=always

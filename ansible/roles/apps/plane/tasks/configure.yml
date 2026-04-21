@@ -1,0 +1,51 @@
+---
+- name: Template {{ plane_app_name }} environment file
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.template:
+    src: plane.env.j2
+    dest: "{{ plane_base_dir }}/plane.env"
+    owner: "{{ plane_service_user }}"
+    group: "{{ plane_service_user }}"
+    mode: "0600"
+  notify: Restart plane services
+
+- name: Remove plane-db.service dependency from quadlet files (external PostgreSQL)
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.replace:
+    path: "{{ plane_quadlets_dir }}/{{ item }}"
+    regexp: '(\b(?:Requires|After)=[^\n]*)plane-db\.service ?'
+    replace: '\1'
+  loop:
+    - api.container
+    - worker.container
+    - beat-worker.container
+    - migrator.container
+    - monitor.container
+  notify: Reload systemd user daemon
+
+- name: Ensure all plane quadlet units have [Install] WantedBy=default.target
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.blockinfile:
+    path: "{{ plane_quadlets_dir }}/{{ item }}"
+    block: |
+      [Install]
+      WantedBy=default.target
+    marker: "# {mark} ANSIBLE MANAGED INSTALL BLOCK"
+    insertafter: EOF
+  loop:
+    - plane-redis.container
+    - plane-mq.container
+    - api.container
+    - worker.container
+    - beat-worker.container
+    - migrator.container
+    - monitor.container
+    - web.container
+    - space.container
+    - admin.container
+    - live.container
+    - proxy.container
+  notify: Restart plane services

@@ -1,0 +1,22 @@
+---
+- name: Deploy {{ plane_app_name }} MinIO container Quadlet
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.template:
+    src: plane-minio.container.j2
+    dest: "{{ plane_quadlets_dir }}/plane-minio.container"
+    owner: "{{ plane_service_user }}"
+    group: "{{ plane_service_user }}"
+    mode: "0644"
+  notify: Restart plane-minio
+
+- name: Deploy {{ plane_app_name }} Proxy container Quadlet
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.template:
+    src: plane-proxy.container.j2
+    dest: "{{ plane_quadlets_dir }}/proxy.container"
+    owner: "{{ plane_service_user }}"
+    group: "{{ plane_service_user }}"
+    mode: "0644"
+  notify: Restart plane-minio

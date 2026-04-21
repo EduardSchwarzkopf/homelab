@@ -1,8 +1,8 @@
 ---
 - name: Setup Proxy Hosts
-  ansible.builtin.import_playbook: proxy
+  ansible.builtin.import_playbook: proxy.yml
 
 - name: Setup Databases
-  ansible.builtin.import_playbook: databases
+  ansible.builtin.import_playbook: databases.yml
 - name: Setup Apps
-  ansible.builtin.import_playbook: apps
+  ansible.builtin.import_playbook: apps.yml

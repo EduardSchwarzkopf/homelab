@@ -3,8 +3,8 @@ plane_service_user: plane
 plane_app_domain: "{{ plane_app_name }}.{{ lan_domain }}"
 
 plane_base_dir: "/home/{{ plane_service_user }}/{{ plane_app_name }}"
-plane_quadlet_dir: "/home/{{ plane_service_user }}/.config/containers/systemd"
-plane_quadlets_url: "https://prime.plane.so/releases/{{ plane_quadlets_version }}/podman-quadlets.tar.gz"
+plane_quadlets_dir: "/home/{{ plane_service_user }}/.config/containers/systemd"
+plane_quadlets_url: "https://prime.plane.so/releases/{{ plane_version }}/podman-quadlets.tar.gz"
 
 plane_db_name: "{{ plane_app_name }}"
 plane_db_user: "{{ plane_app_name }}"

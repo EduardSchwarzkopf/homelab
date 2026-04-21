@@ -18,6 +18,7 @@
       ansible.builtin.systemd_service:
         name: "{{ item }}"
         state: restarted
+        daemon_reload: true
         scope: user
       loop:
         - api.service
@@ -30,6 +31,7 @@
       listen: Restart plane services
       ansible.builtin.systemd_service:
         name: "{{ item }}"
+        daemon_reload: true
         state: restarted
         scope: user
       loop:
@@ -39,15 +41,10 @@
         - live.service
         - proxy.service
 
-    - name: Reload systemd user daemon for minio
-      listen: Restart plane-minio service
-      ansible.builtin.systemd_service:
-        daemon_reload: true
-        scope: user
-
     - name: Restart plane-minio
-      listen: Restart plane-minio service
+      listen: Restart plane services
       ansible.builtin.systemd_service:
         name: plane-minio.service
+        daemon_reload: true
         state: restarted
         scope: user
