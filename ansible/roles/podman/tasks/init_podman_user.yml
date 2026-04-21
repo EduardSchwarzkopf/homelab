@@ -21,6 +21,17 @@
         creates: "/var/lib/systemd/linger/{{ podman_user.name }}"
       notify: Restart systemd-logind
 
+    - name: Set XDG_RUNTIME_DIR for {{ podman_user.name }} login sessions
+      become: true
+      ansible.builtin.blockinfile:
+        path: /home/{{ podman_user.name }}/.bashrc
+        marker: "# {mark} ANSIBLE MANAGED XDG RUNTIME"
+        block: |
+          if [ -z "$XDG_RUNTIME_DIR" ]; then
+              export XDG_RUNTIME_DIR=/run/user/$(id -u)
+              export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+          fi
+
     - name: Ensure subuid entry for {{ podman_user.name }}
       ansible.builtin.lineinfile:
         path: /etc/subuid
