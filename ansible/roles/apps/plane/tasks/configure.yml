@@ -35,17 +35,24 @@
       WantedBy=default.target
     marker: "# {mark} ANSIBLE MANAGED INSTALL BLOCK"
     insertafter: EOF
-  loop:
-    - plane-redis.container
-    - plane-mq.container
-    - api.container
-    - worker.container
-    - beat-worker.container
-    - migrator.container
-    - monitor.container
-    - web.container
-    - space.container
-    - admin.container
-    - live.container
-    - proxy.container
+  loop: "{{ plane_container_list}}"
+
   notify: Restart plane services
+
+- name: Ensure plane containers wait for network to be ready
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.replace:
+    path: "{{ plane_quadlets_dir }}/{{ item }}"
+    regexp: "^(After=.*)$"
+    replace: 'After=\1 network-online.target plane-nw-network.service'
+  loop: "{{ plane_container_list}}"
+
+- name: Ensure plane containers require network service
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.replace:
+    path: "{{ plane_quadlets_dir }}/{{ item }}"
+    regexp: "^(Requires=.*)$"
+    replace: 'Requires=\1 plane-nw-network.service'
+  loop: "{{ plane_container_list}}"

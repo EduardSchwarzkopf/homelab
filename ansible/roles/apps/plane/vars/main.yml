@@ -23,3 +23,17 @@ plane_minio_bucket: uploads
 plane_mount_dir: /mnt/{{ plane_app_name }}
 plane_uploads_dir: "{{ plane_mount_dir }}/uploads"
 plane_minio_image: "docker.io/minio/minio:latest"
+
+plane_container_list:
+  - plane-redis.container
+  - plane-mq.container
+  - api.container
+  - worker.container
+  - beat-worker.container
+  - migrator.container
+  - monitor.container
+  - web.container
+  - space.container
+  - admin.container
+  - live.container
+  - proxy.container
