@@ -1,0 +1,25 @@
+plane_app_name: plane
+plane_service_user: plane
+plane_app_domain: "{{ plane_app_name }}.{{ lan_domain }}"
+
+plane_base_dir: "/home/{{ plane_service_user }}/{{ plane_app_name }}"
+plane_quadlet_dir: "/home/{{ plane_service_user }}/.config/containers/systemd"
+plane_quadlets_url: "https://prime.plane.so/releases/{{ plane_quadlets_version }}/podman-quadlets.tar.gz"
+
+plane_db_name: "{{ plane_app_name }}"
+plane_db_user: "{{ plane_app_name }}"
+plane_db_hostname: "{{ postgres_host }}"
+plane_db_port: "{{ postgres_port | default(5432) }}"
+
+plane_db_password_secret_name: "{{ plane_app_name }}_db_password"
+plane_secret_key_secret_name: "{{ plane_app_name }}_secret_key"
+plane_minio_access_key_secret_name: "{{ plane_app_name }}_minio_access_key"
+plane_minio_secret_key_secret_name: "{{ plane_app_name }}_minio_secret_key"
+plane_mq_password_secret_name: "{{ plane_app_name }}_mq_password"
+
+plane_mq_user: plane
+plane_minio_bucket: uploads
+
+plane_mount_dir: /mnt/{{ plane_app_name }}
+plane_uploads_dir: "{{ plane_mount_dir }}/uploads"
+plane_minio_image: "docker.io/minio/minio:latest"

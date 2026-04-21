@@ -41,7 +41,7 @@
     tasks_from: setup_additional_disks.yml
   vars:
     disks:
-      - scsi_num: 1
+      - scsi_num: 2
         mount_path: "{{ immich_mount_dir }}"
 
 - name: Setup podman user

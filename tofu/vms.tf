@@ -11,6 +11,14 @@ locals {
   }
 
   virtual_machines = {
+    games = {
+      role         = "Gaming Server"
+      cpu_cores    = 4
+      memory_gb    = 8
+      os_disk_size = 30
+      additional_disks = {
+      }
+    }
     utility = {
       role         = "Utility Server"
       cpu_cores    = 2
@@ -76,6 +84,21 @@ locals {
       os_disk_size = 20
       gpu          = true
       data_disk = {
+        snes-archive = {
+          datastore_id = local.nas_datastore_id
+          size         = 1
+          backup_tier  = 4
+        }
+        n64-archive = {
+          datastore_id = local.nas_datastore_id
+          size         = 3
+          backup_tier  = 4
+        }
+        gamecube-archive = {
+          datastore_id = local.nas_datastore_id
+          size         = 40
+          backup_tier  = 4
+        }
         immich = {
           datastore_id = local.nas_datastore_id
           size         = 1000
@@ -89,6 +112,11 @@ locals {
       memory_gb    = 8
       os_disk_size = 20
       data_disk = {
+        plane = {
+          datastore_id = local.nas_datastore_id
+          size         = 50
+          backup_tier  = 2
+        }
         docmost = {
           datastore_id = local.nas_datastore_id
           size         = 100

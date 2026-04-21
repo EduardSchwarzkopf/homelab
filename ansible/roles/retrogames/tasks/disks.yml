@@ -1,0 +1,9 @@
+- name: Setup disks
+  ansible.builtin.include_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: "{{ item.scsi_num }}"
+        mount_path: "{{ retrogames_basepath }}/{{ item.name}}"
+  loop: "{{ retrogames_consoles }}"

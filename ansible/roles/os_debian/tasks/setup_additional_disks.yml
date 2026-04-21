@@ -12,7 +12,7 @@
 
     - name: Create partition on each disk
       community.general.parted:
-        device: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}"
+        device: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ os_debian_mount_disk.scsi_num }}"
         number: 1
         label: gpt
         state: present
@@ -20,25 +20,28 @@
         part_end: "100%"
       loop: "{{ disks }}"
       loop_control:
-        label: "{{ item.mount_path }}"
+        label: "{{ os_debian_mount_disk.mount_path }}"
+        loop_var: os_debian_mount_disk
 
     - name: Create ext4 filesystem
       community.general.filesystem:
         fstype: ext4
-        dev: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}-part1"
+        dev: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ os_debian_mount_disk.scsi_num }}-part1"
         force: false
       loop: "{{ disks }}"
       loop_control:
-        label: "{{ item.mount_path }}"
+        label: "{{ os_debian_mount_disk.mount_path }}"
+        loop_var: os_debian_mount_disk
 
     - name: Check current mount point for each disk
       ansible.builtin.shell: |
-        lsblk -ln -o MOUNTPOINT "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}-part1" | grep -v '^$' | head -1
+        lsblk -ln -o MOUNTPOINT "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ os_debian_mount_disk.scsi_num }}-part1" | grep -v '^$' | head -1
       register: current_mounts
       changed_when: false
       loop: "{{ disks }}"
       loop_control:
-        label: "{{ item.mount_path }}"
+        label: "{{ os_debian_mount_disk.mount_path }}"
+        loop_var: os_debian_mount_disk
 
     - name: Unmount disk if mounted at wrong location
       ansible.posix.mount:
@@ -47,10 +50,11 @@
       loop: "{{ disks }}"
       loop_control:
         index_var: idx
-        label: "{{ item.mount_path }}"
+        loop_var: os_debian_mount_disk
+        label: "{{ os_debian_mount_disk.mount_path }}"
       when:
         - current_mounts.results[idx].stdout != ""
-        - current_mounts.results[idx].stdout != item.mount_path
+        - current_mounts.results[idx].stdout != os_debian_mount_disk.mount_path
 
     - name: Remove old fstab entry if path changed
       ansible.posix.mount:
@@ -59,18 +63,20 @@
       loop: "{{ disks }}"
       loop_control:
         index_var: idx
-        label: "{{ item.mount_path }}"
+        loop_var: os_debian_mount_disk
+        label: "{{ os_debian_mount_disk.mount_path }}"
       when:
         - current_mounts.results[idx].stdout != ""
-        - current_mounts.results[idx].stdout != item.mount_path
+        - current_mounts.results[idx].stdout != os_debian_mount_disk.mount_path
 
     - name: Mount disk at correct location and update fstab
       ansible.posix.mount:
-        path: "{{ item.mount_path }}"
-        src: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ item.scsi_num }}-part1"
+        path: "{{ os_debian_mount_disk.mount_path }}"
+        src: "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi{{ os_debian_mount_disk.scsi_num }}-part1"
         fstype: ext4
         opts: defaults,nofail
         state: mounted
       loop: "{{ disks }}"
       loop_control:
-        label: "{{ item.mount_path }}"
+        loop_var: os_debian_mount_disk
+        label: "{{ os_debian_mount_disk.mount_path }}"

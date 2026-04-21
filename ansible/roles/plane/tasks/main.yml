@@ -1,0 +1,94 @@
+---
+- name: Generate and store secrets in Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ plane_app_name }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: db_password
+        length: 32
+      - key: secret_key
+        length: 50
+      - key: minio_access_key
+        length: 20
+      - key: minio_secret_key
+        length: 40
+      - key: mq_password
+        length: 32
+      - key: live_server_secret_key
+        length: 32
+
+- name: Fetch plane secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ plane_app_name }}"
+    vault_secret_mapping:
+      - key: db_password
+        var_name: plane_db_password
+      - key: secret_key
+        var_name: plane_secret_key
+      - key: minio_access_key
+        var_name: plane_minio_access_key
+      - key: minio_secret_key
+        var_name: plane_minio_secret_key
+      - key: mq_password
+        var_name: plane_mq_password
+      - key: live_server_secret_key
+        var_name: plane_live_server_secret_key
+
+- name: Provision {{ plane_app_name }} database
+  ansible.builtin.import_role:
+    name: postgres
+    tasks_from: provision_database.yml
+  vars:
+    database_name: "{{ plane_db_name }}"
+    database_user: "{{ plane_db_user }}"
+    database_user_password: "{{ plane_db_password }}"
+
+- name: Setup podman user for {{ plane_app_name }}
+  ansible.builtin.import_role:
+    name: podman
+    tasks_from: init_podman_user
+  vars:
+    podman_user:
+      name: "{{ plane_service_user }}"
+
+- name: Setup disks for {{ plane_app_name }}
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: 3
+        mount_path: "{{ plane_mount_dir }}"
+
+- name: Setup directories for {{ plane_app_name }}
+  ansible.builtin.import_tasks: directories.yml
+
+- name: Install {{ plane_app_name }}
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configure {{ plane_app_name }}
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Deploy {{ plane_app_name }} containers
+  ansible.builtin.import_tasks: containers.yml
+
+- name: Start {{ plane_app_name }} services
+  ansible.builtin.import_tasks: services.yml
+
+- name: Configure NPM proxy host
+  ansible.builtin.import_role:
+    name: nginx_proxy_manager
+    tasks_from: proxy_hosts.yml
+  vars:
+    npm_proxy_hosts:
+      - domain_names:
+          - "{{ plane_app_domain }}"
+        forward_host: "{{ ansible_host }}"
+        forward_port: "{{ plane_http_port }}"
+        allow_websocket_upgrade: true

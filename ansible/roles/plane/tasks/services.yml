@@ -1,0 +1,63 @@
+---
+# Startup sequence per https://developers.plane.so/self-hosting/methods/podman-quadlets
+# Order is critical: network → core deps → backend → frontend
+
+- name: Reload systemd user daemon for {{ plane_app_name }}
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    scope: user
+
+- name: Start {{ plane_app_name }} network service
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.systemd_service:
+    name: plane-nw-network.service
+    state: started
+    enabled: true
+    scope: user
+
+# plane-db is intentionally skipped — external PostgreSQL is used instead
+- name: Start {{ plane_app_name }} core dependency services
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    scope: user
+  loop:
+    - plane-redis.service
+    - plane-mq.service
+    - plane-minio.service
+
+- name: Start {{ plane_app_name }} backend services
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    scope: user
+  loop:
+    - api.service
+    - worker.service
+    - beat-worker.service
+    - migrator.service
+    - monitor.service
+
+- name: Start {{ plane_app_name }} frontend services
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    scope: user
+  loop:
+    - web.service
+    - space.service
+    - admin.service
+    - live.service
+    - proxy.service

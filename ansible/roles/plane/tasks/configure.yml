@@ -1,0 +1,11 @@
+---
+- name: Template {{ plane_app_name }} environment file
+  become: true
+  become_user: "{{ plane_service_user }}"
+  ansible.builtin.template:
+    src: plane.env.j2
+    dest: "{{ plane_base_dir }}/plane.env"
+    owner: "{{ plane_service_user }}"
+    group: "{{ plane_service_user }}"
+    mode: "0600"
+  notify: Restart plane services

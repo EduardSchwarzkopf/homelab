@@ -1,0 +1,21 @@
+[Unit]
+Description={{ plane_app_name }} MinIO container
+After=network-online.target plane-nw-network.service
+Requires=plane-nw-network.service
+
+[Container]
+Image={{ plane_minio_image }}
+ContainerName={{ plane_app_name }}-minio
+Network={{ plane_app_name }}-nw.network
+Exec=server /export --console-address :9090
+Volume={{ plane_uploads_dir }}:/export
+
+Environment=MINIO_ROOT_USER={{ plane_minio_access_key }}
+Environment=MINIO_ROOT_PASSWORD={{ plane_minio_secret_key }}
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
