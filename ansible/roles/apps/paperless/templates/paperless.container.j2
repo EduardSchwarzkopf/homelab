@@ -5,6 +5,9 @@ Requires={{ paperless_app_name }}-redis.service
 
 [Container]
 Image={{ paperless_image }}
+UserNS=keep-id
+User={{ paperless_service_user_uid }}
+Group={{ paperless_service_user_gid }}
 ContainerName={{ paperless_app_name }}
 Network={{ paperless_app_name }}.network
 PublishPort={{ paperless_port }}:8000
@@ -30,7 +33,7 @@ Environment=PAPERLESS_CSRF_TRUSTED_ORIGINS={{ paperless_url }}
 
 [Service]
 Restart=always
-TimeoutStartSec=300
+TimeoutStartSec=600
 
 [Install]
 WantedBy=default.target
