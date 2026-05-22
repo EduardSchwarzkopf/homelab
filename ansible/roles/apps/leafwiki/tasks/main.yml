@@ -1,0 +1,56 @@
+---
+- name: Setup disks for leafwiki
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: 1
+        mount_path: "{{ leafwiki_data_dir }}"
+
+- name: Generate and store secrets in Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ leafwiki_app_name }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: admin_password
+        length: 32
+
+- name: Fetch leafwiki secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ leafwiki_app_name }}"
+    vault_secret_mapping:
+      - key: admin_password
+        var_name: __leafwiki_admin_password
+
+- name: Setup podman user
+  ansible.builtin.import_role:
+    name: podman
+    tasks_from: init_podman_user
+  vars:
+    podman_user:
+      name: "{{ leafwiki_service_user }}"
+
+- name: Setup directories
+  ansible.builtin.import_tasks: directories.yml
+
+- name: Install leafwiki
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configure NPM proxy host
+  ansible.builtin.import_role:
+    name: nginx_proxy_manager
+    tasks_from: proxy_hosts.yml
+  vars:
+    npm_proxy_hosts:
+      - domain_names:
+          - "{{leafwiki_app_domain}}"
+        forward_host: "{{ ansible_host }}"
+        forward_port: "{{ leafwiki_port }}"
+        allow_websocket_upgrade: true

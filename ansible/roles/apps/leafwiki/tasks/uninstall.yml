@@ -1,0 +1,25 @@
+---
+- name: Stop and remove containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ leafwiki_app_name }}"
+    - "{{ leafwiki_app_name }}-redis"
+  failed_when: false
+
+- name: Remove volumes
+  containers.podman.podman_volume:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ leafwiki_app_name }}-data"
+    - "{{ leafwiki_app_name }}-redis"
+  failed_when: false
+
+- name: Remove network
+  containers.podman.podman_network:
+    name: "{{ leafwiki_app_name }}"
+    state: absent
+    force: true
+  failed_when: false
