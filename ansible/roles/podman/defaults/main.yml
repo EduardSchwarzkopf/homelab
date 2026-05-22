@@ -2,8 +2,10 @@
 # Podman version to install (leave empty for latest)
 podman_version: ""
 
-# podman-compose version (installed via pip)
-podman_compose_version: "1.2.0"
+# podman-compose version
+podman_compose_version: "1.5.0"
+podman_compose_path: /usr/local/bin/podman-compose
+
 podman_users: []
 # Enable rootless mode for the above users
 podman_rootless: true
