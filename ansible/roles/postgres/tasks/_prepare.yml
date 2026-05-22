@@ -1,0 +1,8 @@
+- name: Print
+  ansible.builtin.debug:
+    msg: "postgres_instance_name: {{ postgres_instance_name }}"
+
+- name: fetch database credentials
+  ansible.builtin.set_fact:
+    database_credentials: "{{ lookup('community.hashi_vault.vault_kv2_get', postgres_vault_secret_basepath + '/' + postgres_instance_name, engine_mount_point=vault_mount_path).secret }}"
+  no_log: true
