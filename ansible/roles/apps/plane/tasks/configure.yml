@@ -17,12 +17,7 @@
     path: "{{ plane_quadlets_dir }}/{{ item }}"
     regexp: '(\b(?:Requires|After)=[^\n]*)plane-db\.service ?'
     replace: '\1'
-  loop:
-    - api.container
-    - worker.container
-    - beat-worker.container
-    - migrator.container
-    - monitor.container
+  loop: "{{ plane_container_list }}"
   notify: Reload systemd user daemon
 
 - name: Ensure all plane quadlet units have [Install] WantedBy=default.target
@@ -36,7 +31,6 @@
     marker: "# {mark} ANSIBLE MANAGED INSTALL BLOCK"
     insertafter: EOF
   loop: "{{ plane_container_list}}"
-
   notify: Restart plane services
 
 - name: Ensure plane containers wait for network to be ready

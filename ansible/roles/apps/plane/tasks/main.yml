@@ -11,6 +11,8 @@
         length: 32
       - key: secret_key
         length: 50
+      - key: minio_root_password
+        length: 40
       - key: minio_access_key
         length: 20
       - key: minio_secret_key
@@ -35,6 +37,8 @@
         var_name: plane_db_password
       - key: secret_key
         var_name: plane_secret_key
+      - key: minio_root_password
+        var_name: plane_minio_root_password
       - key: minio_access_key
         var_name: plane_minio_access_key
       - key: minio_secret_key

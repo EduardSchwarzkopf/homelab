@@ -5,7 +5,6 @@ Requires=plane-nw-network.service
 
 [Container]
 Image={{ plane_minio_image }}
-ContainerName={{ plane_app_name }}-minio
 Network={{ plane_app_name }}-nw.network
 Exec=server /export --console-address :9090
 Volume={{ plane_uploads_dir }}:/export

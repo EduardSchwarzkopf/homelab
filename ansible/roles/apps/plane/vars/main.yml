@@ -13,6 +13,7 @@ plane_db_port: "{{ postgres_port | default(5432) }}"
 
 plane_db_password_secret_name: "{{ plane_app_name }}_db_password"
 plane_secret_key_secret_name: "{{ plane_app_name }}_secret_key"
+plane_minio_root_user: "{{ plane_app_name }}"
 plane_minio_access_key_secret_name: "{{ plane_app_name }}_minio_access_key"
 plane_minio_secret_key_secret_name: "{{ plane_app_name }}_minio_secret_key"
 plane_mq_password_secret_name: "{{ plane_app_name }}_mq_password"
