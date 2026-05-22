@@ -33,7 +33,7 @@
       - key: db_user
         value: "{{ paperless_db_user }}"
 
-- name: Fetch docmost secrets from Vault
+- name: Fetch paperless secrets from Vault
   ansible.builtin.import_role:
     name: vault
     tasks_from: fetch_secrets.yml

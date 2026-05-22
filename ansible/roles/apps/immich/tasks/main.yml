@@ -12,7 +12,7 @@
       - key: db_password
         length: 32
 
-- name: Fetch docmost secrets from Vault
+- name: Fetch immich secrets from Vault
   ansible.builtin.import_role:
     name: vault
     tasks_from: fetch_secrets.yml
