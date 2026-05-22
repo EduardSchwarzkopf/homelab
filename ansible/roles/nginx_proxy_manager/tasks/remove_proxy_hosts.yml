@@ -5,8 +5,8 @@
 - name: Get hosts
   ansible.builtin.import_tasks: _get_existing_hosts.yml
 
-- name: Create or update proxy hosts
-  ansible.builtin.include_tasks: _create_proxy_host_single.yml
+- name: delete proxy hosts
+  ansible.builtin.include_tasks: _delete_proxy_host_single.yml
   loop: "{{ npm_proxy_hosts }}"
   loop_control:
     loop_var: proxy_host

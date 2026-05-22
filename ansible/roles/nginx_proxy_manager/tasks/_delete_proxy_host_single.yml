@@ -1,0 +1,12 @@
+- name: Get Host object
+  ansible.builtin.import_tasks: _get_host.yml
+
+- name: "Delete proxy host for {{ proxy_host.domain_names | join(', ') }}"
+  ansible.builtin.uri:
+    url: "{{ npm_api_url }}/nginx/proxy-hosts/{{ existing_host.id}}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ npm_token }}"
+    status_code: 200
+  when: existing_host is not none
+  delegate_to: localhost
