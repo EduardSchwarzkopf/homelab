@@ -28,7 +28,7 @@ A fully automated infrastructure stack that manages:
 - **Virtualization**: Proxmox VE hypervisor with KVM/QEMU
 - **Containers**: Podman-based application deployment via Ansible
 - **Infrastructure**: OpenTofu for provisioning VMs and resources
-- **VM Images**: Packer for building base images (Debian, Talos)
+- **VM Images**: Packer for building base images
 - **Automation**: Ansible playbooks for application deployment
 
 ## Diagram
@@ -49,7 +49,7 @@ For details on each step, explore the corresponding directory in this project.
 homelab/
 ├── ansible/        # Application deployment automation
 ├── docs/           # Architecture documentation and decisions
-├── kubernetes/     # Kubernetes cluster configuration
+├── kubernetes/     # Kubernetes manifests (not currently deployed)
 ├── packer/         # VM image definitions
 └── tofu/           # Infrastructure provisioning
 ```
