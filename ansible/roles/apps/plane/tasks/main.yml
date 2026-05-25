@@ -25,6 +25,8 @@
         length: 32
       - key: silo_hmac_secret_key
         length: 32
+      - key: machine_signature
+        value: "{{ lookup('community.general.random_string', length=32, chars=['0123456789abcdef']) }}"
 
 - name: Fetch plane secrets from Vault
   ansible.builtin.import_role:
@@ -35,6 +37,8 @@
     vault_secret_mapping:
       - key: db_password
         var_name: plane_db_password
+      - key: machine_signature
+        var_name: plane_machine_signature
       - key: secret_key
         var_name: plane_secret_key
       - key: minio_root_password
