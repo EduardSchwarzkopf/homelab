@@ -33,7 +33,64 @@ A fully automated infrastructure stack that manages:
 
 ## Diagram
 
-![Network Diagram](docs/img/homelab.drawio.svg)
+```mermaid
+graph TD
+    User["User / Browser"]
+
+    subgraph Proxmox["Proxmox VE"]
+        subgraph VM_Layer["Debian VMs (Ansible + Podman)"]
+            NPM["Nginx Proxy Manager\n(utility VM)"]
+            Office["Office VM\nDocmost · Plane · Paperless"]
+            Media["Media VM\nImmich · Retro Games"]
+            DB["Database VM\nPostgreSQL · pgvector"]
+            Games["Games VM"]
+        end
+
+        subgraph K8s_Layer["Kubernetes — Talos Linux (in progress)"]
+            MetalLB["MetalLB\n(LoadBalancer)"]
+            Nginx["Ingress-NGINX"]
+            ArgoCD["ArgoCD\n(GitOps)"]
+            OpenWebUI["Open-WebUI"]
+            Longhorn["Longhorn\n(Storage)"]
+        end
+
+        subgraph Storage["Storage"]
+            ZFS["ZFS\n(NAS · OS disks)"]
+            PBS["Proxmox Backup Server"]
+        end
+    end
+
+    Git["Git Repository"]
+    Vault["HashiCorp Vault\n(Secrets)"]
+    PiHole["PiHole\n(DNS)"]
+
+    User -->|DNS lookup| PiHole
+    PiHole -->|VM apps| NPM
+    PiHole -->|K8s apps| MetalLB
+
+    NPM --> Office
+    NPM --> Media
+    NPM --> Games
+
+    Office --> DB
+    Media --> DB
+
+    MetalLB --> Nginx
+    Nginx --> OpenWebUI
+
+    Git -->|watches| ArgoCD
+    ArgoCD -->|applies manifests| OpenWebUI
+
+    OpenWebUI --> Longhorn
+    Office & Media --> ZFS
+
+    Vault -->|injects secrets| Office
+    Vault -->|injects secrets| Media
+    Vault -->|injects secrets| OpenWebUI
+
+    ZFS -->|backed up to| PBS
+    Longhorn -->|backed up to| PBS
+```
 
 ## Quick Start
 
