@@ -1,0 +1,54 @@
+---
+- name: Check if {{ plane_app_name }} is already installed
+  become: true
+  ansible.builtin.stat:
+    path: "{{ plane_base_dir }}/plane.env"
+  register: plane_env_stat
+
+- name: Install {{ plane_app_name }} via Podman Quadlets
+  when: not plane_env_stat.stat.exists
+  become: true
+  become_user: "{{ plane_service_user }}"
+  block:
+    - name: Create temp directory for installer
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: _plane_install
+      register: plane_tmp_dir
+
+    - name: Download Plane Podman Quadlets tarball
+      ansible.builtin.get_url:
+        url: "{{ plane_quadlets_url }}"
+        dest: "{{ plane_tmp_dir.path }}/podman-quadlets.tar.gz"
+        mode: "0644"
+
+    - name: Create extraction directory
+      ansible.builtin.file:
+        path: "{{ plane_tmp_dir.path }}/quadlets"
+        state: directory
+        mode: "0755"
+
+    - name: Extract Plane Podman Quadlets
+      ansible.builtin.unarchive:
+        src: "{{ plane_tmp_dir.path }}/podman-quadlets.tar.gz"
+        dest: "{{ plane_tmp_dir.path }}/quadlets"
+        remote_src: true
+
+    - name: Make install script executable
+      ansible.builtin.file:
+        path: "{{ plane_tmp_dir.path }}/quadlets/install.sh"
+        mode: "0755"
+
+    - name: Run Plane install script
+      ansible.builtin.command:
+        cmd: >-
+          ./install.sh
+          --domain {{ plane_app_domain }}
+          --base-dir {{ plane_base_dir }}
+        chdir: "{{ plane_tmp_dir.path }}/quadlets"
+        creates: "{{ plane_base_dir }}/plane.env"
+
+    - name: Clean up installer temp directory
+      ansible.builtin.file:
+        path: "{{ plane_tmp_dir.path }}"
+        state: absent

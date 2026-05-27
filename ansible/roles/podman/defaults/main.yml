@@ -1,0 +1,31 @@
+---
+# Podman version to install (leave empty for latest)
+podman_version: ""
+
+# podman-compose version
+podman_compose_version: "1.5.0"
+podman_compose_path: /usr/local/bin/podman-compose
+
+podman_users: []
+# Enable rootless mode for the above users
+podman_rootless: true
+
+# Enable Podman socket (Docker API compatibility)
+podman_socket_enabled: false
+
+# Extra tools
+podman_install_compose: true
+podman_install_buildah: true
+podman_install_skopeo: true
+
+# Registry search order
+podman_registries_search:
+  - docker.io
+  - quay.io
+  - ghcr.io
+
+podman_registries_insecure: []
+podman_registries_blocked: []
+
+# Storage driver
+podman_storage_driver: overlay

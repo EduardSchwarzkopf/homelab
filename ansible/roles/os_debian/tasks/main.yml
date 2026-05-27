@@ -1,0 +1,4 @@
+---
+- name: Manage disks
+  ansible.builtin.import_tasks: setup_additional_disks.yml
+  tags: disks

@@ -1,0 +1,52 @@
+---
+- name: Ensure /etc/containers directory exists
+  ansible.builtin.file:
+    path: /etc/containers
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure Podman storage (system-wide)
+  ansible.builtin.copy:
+    dest: /etc/containers/storage.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible — do not edit manually
+      [storage]
+      driver = "{{ podman_storage_driver }}"
+      graphRoot = "/var/lib/containers/storage"
+      runRoot = "/run/containers/storage"
+
+      [storage.options]
+      additionalimagestores = []
+
+      [storage.options.overlay]
+      mountopt = "nodev"
+
+- name: Configure rootless storage per user
+  ansible.builtin.file:
+    path: "/home/{{ item }}/.config/containers"
+    state: directory
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0700"
+  loop: "{{ podman_users }}"
+  when: podman_rootless and podman_users | length > 0
+
+- name: Write rootless storage.conf per user
+  ansible.builtin.copy:
+    dest: "/home/{{ item }}/.config/containers/storage.conf"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0600"
+    content: |
+      # Managed by Ansible — do not edit manually
+      [storage]
+      driver = "{{ podman_storage_driver }}"
+      graphRoot = "/home/{{ item }}/.local/share/containers/storage"
+      runRoot = "/run/user/{{ item }}/containers"
+  loop: "{{ podman_users }}"
+  when: podman_rootless and podman_users | length > 0

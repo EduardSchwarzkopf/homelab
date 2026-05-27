@@ -1,0 +1,9 @@
+---
+- name: Setup rootless podman users
+  become: true
+  block:
+    - name: Setup each podman user
+      ansible.builtin.include_tasks: init_podman_user.yml
+      loop: "{{ podman_users }}"
+      loop_control:
+        loop_var: podman_user

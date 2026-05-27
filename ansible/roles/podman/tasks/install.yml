@@ -1,0 +1,49 @@
+---
+- name: Running on OS family
+  ansible.builtin.debug:
+    msg: "OS Family: {{ ansible_facts['os_family'] }}"
+
+- name: Install Podman (latest)
+  ansible.builtin.package:
+    name: podman
+    state: present
+    update_cache: true
+  when: podman_version == "" or podman_version is not defined
+  notify: Restart podman socket
+
+- name: Install Podman (pinned version)
+  ansible.builtin.apt:
+    name: "podman={{ podman_version }}"
+    state: present
+    update_cache: true
+  when:
+    - podman_version is defined
+    - podman_version != ""
+    - ansible_facts["os_family"] == "Debian"
+  notify: Restart podman socket
+
+- name: Verify Podman installation
+  ansible.builtin.command: podman --version
+  register: podman_version_output
+  changed_when: false
+
+- name: Print Podman version
+  ansible.builtin.debug:
+    msg: "Podman installed: {{ podman_version_output.stdout }}"
+
+- name: Installing podman-compose via apt
+  ansible.builtin.apt:
+    name: podman-compose
+    state: present
+  register: apt_compose
+  failed_when: false
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Verify podman-compose installation
+  ansible.builtin.command: podman-compose --version
+  register: podman_compose_version_output
+  changed_when: false
+
+- name: Print podman-compose version
+  ansible.builtin.debug:
+    msg: "podman-compose installed: {{ podman_compose_version_output.stdout }}"

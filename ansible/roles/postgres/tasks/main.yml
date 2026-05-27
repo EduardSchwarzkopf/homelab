@@ -1,0 +1,15 @@
+---
+- name: Setup {{ postgres_service_user }} service user
+  ansible.builtin.import_role:
+    name: podman
+    tasks_from: init_podman_user
+  vars:
+    podman_user:
+      name: "{{ postgres_service_user }}"
+      home: "{{ postgres_service_user_home_dir }}"
+
+- name: Setup postgres instances
+  ansible.builtin.include_tasks: instance.yml
+  loop: "{{ postgres_instances }}"
+  loop_control:
+    loop_var: instance

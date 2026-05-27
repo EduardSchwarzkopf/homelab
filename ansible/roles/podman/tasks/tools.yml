@@ -1,0 +1,34 @@
+---
+- name: Install Buildah (OCI image builder)
+  ansible.builtin.package:
+    name: buildah
+    state: present
+  when: podman_install_buildah
+
+- name: Install Skopeo (image inspection/copy tool)
+  ansible.builtin.package:
+    name: skopeo
+    state: present
+  when: podman_install_skopeo
+
+- name: Verify Buildah installation
+  ansible.builtin.command: buildah --version
+  register: buildah_version_output
+  changed_when: false
+  when: podman_install_buildah
+
+- name: Print Buildah version
+  ansible.builtin.debug:
+    msg: "Buildah installed: {{ buildah_version_output.stdout }}"
+  when: podman_install_buildah
+
+- name: Verify Skopeo installation
+  ansible.builtin.command: skopeo --version
+  register: skopeo_version_output
+  changed_when: false
+  when: podman_install_skopeo
+
+- name: Print Skopeo version
+  ansible.builtin.debug:
+    msg: "Skopeo installed: {{ skopeo_version_output.stdout }}"
+  when: podman_install_skopeo

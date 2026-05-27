@@ -1,0 +1,4 @@
+---
+- name: Manage proxy hosts
+  ansible.builtin.import_tasks: proxy_hosts.yml
+  tags: npm_proxy_hosts

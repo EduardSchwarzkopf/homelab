@@ -1,0 +1,13 @@
+---
+- name: Restart podman socket
+  ansible.builtin.service:
+    name: podman.socket
+    state: restarted
+  when: podman_socket_enabled | default(false)
+  listen: "restart podman"
+
+- name: Restart systemd-logind
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: systemd-logind
+    state: restarted

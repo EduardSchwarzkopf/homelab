@@ -1,0 +1,78 @@
+---
+- name: Setup podman user
+  ansible.builtin.import_role:
+    name: podman
+    tasks_from: init_podman_user
+  vars:
+    podman_user:
+      name: "{{ paperless_service_user }}"
+
+- name: Setup disks for {{ paperless_app_name }}
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: 2
+        mount_path: "{{ paperless_mount_dir }}"
+
+- name: Generate and store secrets in Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ paperless_app_name }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: secret_key
+        length: 64
+      - key: smb_password
+        length: 24
+      - key: db_password
+        length: 32
+      - key: db_user
+        value: "{{ paperless_db_user }}"
+
+- name: Fetch paperless secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ paperless_app_name }}"
+    vault_secret_mapping:
+      - key: secret_key
+        var_name: paperless_secret_key
+      - key: db_password
+        var_name: paperless_db_password
+      - key: smb_password
+        var_name: paperless_smb_password
+
+- name: Provision {{ paperless_app_name }} database
+  ansible.builtin.import_role:
+    name: postgres
+    tasks_from: provision_database.yml
+  vars:
+    database_name: "{{ paperless_db_name }}"
+    database_user: "{{ paperless_db_user }}"
+    database_user_password: "{{ paperless_db_password }}"
+
+- name: Setup directories
+  ansible.builtin.import_tasks: directories.yml
+
+- name: Deploy application
+  ansible.builtin.import_tasks: install.yml
+
+- name: Setup SMB
+  ansible.builtin.import_tasks: smb.yml
+  when: paperless_smb_enabled
+
+- name: Configure NPM proxy host
+  ansible.builtin.import_role:
+    name: nginx_proxy_manager
+    tasks_from: proxy_hosts.yml
+  vars:
+    npm_proxy_hosts:
+      - domain_names:
+          - "{{paperless_app_domain}}"
+        forward_host: "{{ ansible_host }}"
+        forward_port: "{{ paperless_port }}"

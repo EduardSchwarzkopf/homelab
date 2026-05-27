@@ -1,0 +1,30 @@
+---
+- name: Stop and remove containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ paperless_app_name }}"
+    - paperless-redis
+  failed_when: false
+
+- name: Remove paperless volume
+  containers.podman.podman_volume:
+    name: paperless-redis
+    state: absent
+  failed_when: false
+
+- name: Remove paperless network
+  containers.podman.podman_network:
+    name: paperless
+    state: absent
+    force: true
+  failed_when: false
+
+- name: Remove Samba share config
+  ansible.builtin.blockinfile:
+    path: /etc/samba/smb.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - {{ paperless_smb_share_name }}"
+    block: ""
+  failed_when: false
+  notify: Restart smbd

@@ -1,0 +1,21 @@
+[Unit]
+Description={{ docmost_app_name }} container
+After=network-online.target {{ docmost_app_name }}-redis.service
+
+[Container]
+Image={{ docmost_image }}
+ContainerName={{ docmost_app_name }}
+Network={{ docmost_app_name }}.network
+PublishPort={{ docmost_port }}:3000
+Volume={{ docmost_data_dir }}:/app/data/storage
+Environment=APP_URL={{ docmost_app_url }}
+Environment=APP_SECRET={{ docmost_app_secret }}
+Environment=DATABASE_URL=postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@{{ postgres_host }}:{{postgres_port }}/{{ docmost_db_name }}
+Environment=REDIS_URL=redis://{{ docmost_app_name }}-redis:6379
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

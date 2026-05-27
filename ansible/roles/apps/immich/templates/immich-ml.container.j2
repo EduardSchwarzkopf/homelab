@@ -1,0 +1,16 @@
+[Unit]
+Description={{ immich_app_name }} Machine Learning container
+After=network-online.target
+
+[Container]
+Image={{ immich_ml_image }}
+ContainerName={{ immich_app_name }}-ml
+Network={{ immich_app_name }}.network
+Volume={{ immich_app_name }}-model-cache.volume:/cache
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,39 @@
+[Unit]
+Description={{ paperless_app_name }} container
+After=network-online.target {{ paperless_app_name }}-redis.service
+Requires={{ paperless_app_name }}-redis.service
+
+[Container]
+Image={{ paperless_image }}
+UserNS=keep-id
+User={{ paperless_service_user_uid }}
+Group={{ paperless_service_user_gid }}
+ContainerName={{ paperless_app_name }}
+Network={{ paperless_app_name }}.network
+PublishPort={{ paperless_port }}:8000
+Volume={{ paperless_data_dir }}:/usr/src/paperless/data
+Volume={{ paperless_media_dir }}:/usr/src/paperless/media
+Volume={{ paperless_export_dir }}:/usr/src/paperless/export
+Volume={{ paperless_consume_dir }}:/usr/src/paperless/consume
+Environment=USERMAP_UID={{ paperless_service_user_uid }}
+Environment=USERMAP_GID={{ paperless_service_user_gid }}
+Environment=PAPERLESS_REDIS=redis://{{ paperless_app_name }}-redis:6379
+Environment=PAPERLESS_TIME_ZONE={{ paperless_timezone }}
+Environment=PAPERLESS_OCR_LANGUAGE={{ paperless_ocr_language }}
+Environment=PAPERLESS_DBENGINE=postgresql
+Environment=PAPERLESS_DBHOST={{ postgres_host }}
+Environment=PAPERLESS_DBPORT={{ postgres_port }}
+Environment=PAPERLESS_DBNAME={{ paperless_db_name }}
+Environment=PAPERLESS_DBUSER={{ paperless_db_user }}
+Environment=PAPERLESS_DBPASS={{ paperless_db_password }}
+Environment=PAPERLESS_SECRET_KEY={{ paperless_secret_key }}
+Environment=PAPERLESS_URL={{ paperless_url }}
+Environment=PAPERLESS_CORS_ALLOWED_HOSTS={{ paperless_url }}
+Environment=PAPERLESS_CSRF_TRUSTED_ORIGINS={{ paperless_url }}
+
+[Service]
+Restart=always
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

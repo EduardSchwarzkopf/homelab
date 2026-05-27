@@ -1,0 +1,9 @@
+- name: Get existing proxy hosts
+  ansible.builtin.uri:
+    url: "{{ npm_api_url }}/nginx/proxy-hosts"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ npm_token }}"
+    status_code: 200
+  register: existing_hosts
+  delegate_to: localhost

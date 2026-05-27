@@ -1,0 +1,11 @@
+/* Custom Leafwiki Styles */
+:root {
+    --color-brand: {{ leafwiki_brand_color }};
+    --color-brand-dark: {{ leafwiki_brand_color_dark }};
+    --color-brand-light: {{ leafwiki_brand_color_light }};
+}
+
+.app-layout__logo-image {
+    max-width: 32px;
+    padding-bottom: 8px;
+}

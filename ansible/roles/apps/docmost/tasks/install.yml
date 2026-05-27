@@ -1,0 +1,27 @@
+---
+- name: Install docmost with Quadlet
+  become: true
+  become_user: "{{ docmost_service_user }}"
+  block:
+    - name: Create Quadlet files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "/home/{{ docmost_service_user }}/.config/containers/systemd/{{ item.dest }}"
+        owner: "{{ docmost_service_user }}"
+        group: "{{ docmost_service_user }}"
+        mode: "0644"
+      loop:
+        - { src: docmost.network.j2, dest: "{{ docmost_app_name }}.network" }
+        - {
+            src: docmost-redis.volume.j2,
+            dest: "{{ docmost_app_name }}-redis.volume",
+          }
+        - {
+            src: docmost-redis.container.j2,
+            dest: "{{ docmost_app_name }}-redis.container",
+          }
+        - {
+            src: docmost.container.j2,
+            dest: "{{ docmost_app_name }}.container",
+          }
+      notify: Restart service

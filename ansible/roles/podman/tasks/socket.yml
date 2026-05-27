@@ -1,0 +1,32 @@
+---
+# Enables the Podman socket which provides a Docker-compatible API.
+# Useful for tools like Portainer, Compose, or any Docker SDK clients.
+
+- name: Enable and start podman.socket (system-wide / rootful)
+  ansible.builtin.systemd_service:
+    name: podman.socket
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Create Docker socket symlink for API compatibility
+  ansible.builtin.file:
+    src: /run/podman/podman.sock
+    dest: /var/run/docker.sock
+    state: link
+    force: true
+
+- name: Enable user-level podman.socket for rootless users
+  ansible.builtin.systemd_service:
+    name: podman.socket
+    state: started
+    enabled: true
+    scope: user
+    daemon_reload: true
+  become: true
+  become_user: "{{ item }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u ' + item) }}"
+  loop: "{{ podman_users }}"
+  when: podman_rootless and podman_users | length > 0
+  failed_when: false

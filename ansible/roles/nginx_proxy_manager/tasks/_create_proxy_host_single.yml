@@ -1,0 +1,64 @@
+---
+- name: Check domain_names
+  ansible.builtin.include_tasks: _assert_proxy_host_single.yml
+
+- name: Check domain_names
+  ansible.builtin.include_tasks: _get_host.yml
+
+- name: "Create proxy host for {{ proxy_host.domain_names | join(', ') }}"
+  ansible.builtin.uri:
+    url: "{{ npm_api_url }}/nginx/proxy-hosts"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ npm_token }}"
+    body_format: json
+    body:
+      domain_names: "{{ proxy_host.domain_names }}"
+      forward_scheme: "{{ proxy_host.forward_scheme | default('http') }}"
+      forward_host: "{{ proxy_host.forward_host }}"
+      forward_port: "{{ proxy_host.forward_port }}"
+      block_exploits: "{{ proxy_host.block_exploits | default(true) }}"
+      allow_websocket_upgrade: "{{ proxy_host.allow_websocket_upgrade | default(false) }}"
+      http2_support: "{{ proxy_host.http2_support | default(true) }}"
+      ssl_forced: "{{ proxy_host.ssl_forced | default(true) }}"
+      hsts_enabled: "{{ proxy_host.hsts_enabled | default(true) }}"
+      hsts_subdomains: "{{ proxy_host.hsts_subdomains | default(false) }}"
+      caching_enabled: "{{ proxy_host.caching_enabled | default(true) }}"
+      certificate_id: "{{ proxy_host.certificate_id | default(certificate_id) }}"
+      advanced_config: "{{ proxy_host.advanced_config | default('') }}"
+      locations: "{{ proxy_host.locations | default([]) }}"
+      meta:
+        letsencrypt_agree: "{{ proxy_host.letsencrypt_agree | default(false) }}"
+        dns_challenge: "{{ proxy_host.dns_challenge | default(false) }}"
+    status_code: 201
+  when: existing_host is none
+  delegate_to: localhost
+
+- name: "Update proxy host for {{ proxy_host.domain_names | join(', ') }}"
+  ansible.builtin.uri:
+    url: "{{ npm_api_url }}/nginx/proxy-hosts/{{ existing_host.id }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ npm_token }}"
+    body_format: json
+    body:
+      domain_names: "{{ proxy_host.domain_names }}"
+      forward_scheme: "{{ proxy_host.forward_scheme | default('http') }}"
+      forward_host: "{{ proxy_host.forward_host }}"
+      forward_port: "{{ proxy_host.forward_port }}"
+      block_exploits: "{{ proxy_host.block_exploits | default(true) }}"
+      allow_websocket_upgrade: "{{ proxy_host.allow_websocket_upgrade | default(false) }}"
+      http2_support: "{{ proxy_host.http2_support | default(true) }}"
+      ssl_forced: "{{ proxy_host.ssl_forced | default(true) }}"
+      hsts_enabled: "{{ proxy_host.hsts_enabled | default(true) }}"
+      hsts_subdomains: "{{ proxy_host.hsts_subdomains | default(false) }}"
+      caching_enabled: "{{ proxy_host.caching_enabled | default(true) }}"
+      certificate_id: "{{ proxy_host.certificate_id | default(certificate_id) }}"
+      advanced_config: "{{ proxy_host.advanced_config | default('') }}"
+      locations: "{{ proxy_host.locations | default([]) }}"
+      meta:
+        letsencrypt_agree: "{{ proxy_host.letsencrypt_agree | default(false) }}"
+        dns_challenge: "{{ proxy_host.dns_challenge | default(false) }}"
+    status_code: 200
+  when: existing_host is not none
+  delegate_to: localhost

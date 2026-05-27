@@ -1,0 +1,13 @@
+---
+- name: Ensure {{ plane_app_name }} directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ plane_service_user }}"
+    group: "{{ plane_service_user }}"
+    mode: "0755"
+    recurse: true
+  become: true
+  loop:
+    - "{{ plane_mount_dir }}"
+    - "{{ plane_uploads_dir }}"

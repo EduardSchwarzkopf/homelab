@@ -1,0 +1,16 @@
+---
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - uidmap # required for rootless
+      - acl # required for rootless become
+      - fuse-overlayfs # required for rootless overlay storage
+      - slirp4netns # required for rootless networking
+    state: present
+    update_cache: true
+  when: ansible_facts["os_family"] == "Debian"

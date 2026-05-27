@@ -1,0 +1,20 @@
+---
+docmost_quadlet_dir: /etc/containers/systemd
+
+docmost_app_name: "docmost"
+docmost_data_dir: "/mnt/docmost_data"
+docmost_service_user: "{{ docmost_app_name }}"
+
+docmost_version: latest
+dockmost_redis_version: 7
+
+docmost_image_registry: docker.io
+docmost_image: "{{docmost_image_registry}}/docmost/docmost:{{docmost_version}}"
+docmost_redis_image: "{{docmost_image_registry}}/library/redis:{{ dockmost_redis_version }}-alpine"
+
+docmost_port: 3000
+docmost_app_domain: "{{ docmost_app_name }}.{{ lan_domain }}"
+docmost_app_url: "https://{{ docmost_app_domain }}"
+
+docmost_db_user: "{{ docmost_app_name }}"
+docmost_db_name: "{{ docmost_app_name }}"

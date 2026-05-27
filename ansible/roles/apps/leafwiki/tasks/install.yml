@@ -1,0 +1,32 @@
+---
+- name: Install leafwiki with Quadlet
+  become: true
+  become_user: "{{ leafwiki_service_user }}"
+  block:
+    - name: Gather {{ leafwiki_service_user }} uid/gid
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ leafwiki_service_user }}"
+
+    - name: Set uid/gid facts
+      ansible.builtin.set_fact:
+        leafwiki_service_user_uid: "{{ ansible_facts.getent_passwd[leafwiki_service_user][1] }}"
+        leafwiki_service_user_gid: "{{ ansible_facts.getent_passwd[leafwiki_service_user][2] }}"
+
+    - name: Set templating tasks list
+      ansible.builtin.set_fact:
+        leafwiki_templates:
+          - src: leafwiki.container.j2
+            dest: "{{ leafwiki_quadlet_dir }}/{{ leafwiki_app_name }}.container"
+          - src: leafwiki_custom.css
+            dest: "{{ leafwiki_data_dir }}/leafwiki_custom.css"
+
+    - name: Create templated files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ leafwiki_service_user }}"
+        group: "{{ leafwiki_service_user }}"
+        mode: "0644"
+      loop: "{{ leafwiki_templates }}"
+      notify: Restart service

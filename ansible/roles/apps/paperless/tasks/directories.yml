@@ -1,0 +1,10 @@
+---
+- name: Ensure {{ paperless_app_name }} directories exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ paperless_mount_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ paperless_service_user }}"
+    group: "{{ paperless_service_user }}"
+    mode: "0755"

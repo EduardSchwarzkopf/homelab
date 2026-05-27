@@ -1,0 +1,13 @@
+retrogames_user: retrogames
+retrogames_group: retrogames
+retrogames_basepath: /mnt/{{ retrogames_user }}
+
+retrogames_consoles:
+  - name: snes
+    scsi_num: 4
+
+  - name: n64
+    scsi_num: 3
+
+  - name: gamecube
+    scsi_num: 1

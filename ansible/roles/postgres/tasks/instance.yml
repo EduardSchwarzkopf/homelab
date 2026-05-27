@@ -1,0 +1,104 @@
+---
+- name: fetch database credentials
+  ansible.builtin.set_fact:
+    database_root_password_vault_key: db_root_password
+    database_root_user_vault_key: db_root_user
+    database_instance_secret_path: "{{ postgres_vault_secret_basepath }}/{{instance.name}}"
+    database_mount_dir: "/mnt/db/{{ instance.name }}"
+
+- name: Generate and store instance secrets
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: store_secrets.yml
+  vars:
+    vault_secret_path: "{{ database_instance_secret_path }}"
+    vault_force_update: false
+    vault_secrets:
+      - key: "{{ database_root_password_vault_key }}"
+        lenght: 48
+      - key: "{{ database_root_user_vault_key}}"
+        value: "{{ instance.db_root_user | default('postgres') }}"
+
+- name: Fetch instance secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: fetch_secrets.yml
+  vars:
+    vault_secret_path: "{{ database_instance_secret_path }}"
+    vault_secret_mapping:
+      - key: "{{ database_root_password_vault_key }}"
+        var_name: database_root_password
+      - key: "{{ database_root_user_vault_key }}"
+        var_name: database_db_user
+
+- name: Generate private variable for instance with secrets
+  ansible.builtin.set_fact:
+    database_data_dir: "{{ database_mount_dir }}/pgdata"
+    instance_secrets:
+      password: "{{ database_root_password }}"
+      db_user: "{{ database_db_user }}"
+  no_log: true
+
+- name: Setup disks for databases
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: "{{ instance.scsi_num }}"
+        mount_path: "{{ database_mount_dir }}"
+
+- name: Ensure mount directory is owned by {{ postgres_service_user }}
+  become: true
+  ansible.builtin.file:
+    path: "{{ database_mount_dir }}"
+    state: directory
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0700"
+
+- name: Ensure data directory exists for {{ instance.name }}
+  become: true
+  ansible.builtin.file:
+    path: "{{ database_data_dir }}"
+    state: directory
+    owner: "{{ postgres_service_user }}"
+    group: "{{ postgres_service_user }}"
+    mode: "0700"
+    recurse: true
+
+- name: Setup databases
+  become: true
+  become_user: "{{ postgres_service_user }}"
+  block:
+    - name: Create podman secret for {{ instance.name }}
+      containers.podman.podman_secret:
+        name: "{{ instance.name }}_pg_password"
+        data: "{{ instance_secrets.password }}"
+        state: present
+
+    - name: Create Quadlet files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ postgres_service_user_home_dir }}/.config/containers/systemd/{{ item.dest }}"
+        owner: "{{ postgres_service_user }}"
+        group: "{{ postgres_service_user }}"
+        mode: "0644"
+      loop:
+        - { src: postgres.container.j2, dest: "{{ instance.name }}.container" }
+
+    - name: Start {{ instance.name }} service
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        name: "{{ instance.name }}"
+        state: restarted
+        enabled: true
+        scope: user
+
+    - name: Wait for {{ instance.name }} to be reachable on port {{ instance.port }}
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ instance.port }}"
+        state: started
+        timeout: 60
+        delay: 5

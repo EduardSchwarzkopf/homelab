@@ -1,0 +1,13 @@
+---
+- name: Authenticate with NPM
+  ansible.builtin.import_tasks: _auth.yml
+
+- name: Get hosts
+  ansible.builtin.import_tasks: _get_existing_hosts.yml
+
+- name: delete proxy hosts
+  ansible.builtin.include_tasks: _delete_proxy_host_single.yml
+  loop: "{{ npm_proxy_hosts }}"
+  loop_control:
+    loop_var: proxy_host
+    label: "{{ proxy_host.domain_names | join(', ') }}"

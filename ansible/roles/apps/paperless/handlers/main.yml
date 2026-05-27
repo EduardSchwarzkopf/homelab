@@ -1,0 +1,19 @@
+---
+- name: Restart smbd
+  become: true
+  ansible.builtin.service:
+    name: smbd
+    state: restarted
+
+- name: Enable and start {{ paperless_app_name }} services
+  become: true
+  become_user: "{{ paperless_service_user }}"
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    daemon_reload: true
+    state: restarted
+    enabled: true
+    scope: user
+  loop:
+    - "{{ paperless_app_name }}-redis.service"
+    - "{{ paperless_app_name }}.service"

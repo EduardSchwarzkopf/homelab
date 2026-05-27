@@ -1,0 +1,58 @@
+# roles/postgres/tasks/provision_database.yml
+- name: Prepare
+  ansible.builtin.import_tasks: _prepare.yml
+
+- name: Ensure psycopg2 is installed (required for postgresql modules)
+  become: true
+  ansible.builtin.apt:
+    name: python3-psycopg2
+    state: present
+  delegate_to: "{{ postgres_host }}"
+
+- name: "Ensure database {{ database_name }} exists on {{ postgres_host }}"
+  community.postgresql.postgresql_db:
+    name: "{{ database_name }}"
+    state: present
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
+  delegate_to: "{{ postgres_host }}"
+
+- name: "Ensure user {{ database_user }} exists on {{ postgres_host }}"
+  community.postgresql.postgresql_user:
+    name: "{{ database_user }}"
+    password: "{{ database_user_password }}"
+    state: present
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
+  delegate_to: "{{ postgres_host }}"
+
+- name: "Grant {{ database_user }} full privileges on {{ database_name }}"
+  community.postgresql.postgresql_privs:
+    login_db: "{{ database_name }}"
+    roles: "{{ database_user }}"
+    privs: ALL
+    type: database
+    state: present
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
+  delegate_to: "{{ postgres_host }}"
+
+- name: "Grant {{ database_user }} privileges on public schema in {{ database_name }}"
+  community.postgresql.postgresql_privs:
+    login_db: "{{ database_name }}"
+    roles: "{{ database_user }}"
+    privs: ALL
+    type: schema
+    objs: public
+    state: present
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ database_credentials.db_root_user }}"
+    login_password: "{{ database_credentials.db_root_password }}"
+  delegate_to: "{{ postgres_host }}"

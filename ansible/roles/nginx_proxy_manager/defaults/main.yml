@@ -1,0 +1,4 @@
+---
+# List of proxy hosts to manage
+npm_proxy_hosts: []
+certificate_id: 99

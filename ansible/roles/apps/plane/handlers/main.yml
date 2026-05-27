@@ -1,0 +1,50 @@
+---
+- name: Reload and restart plane services
+  become: true
+  become_user: "{{ plane_service_user }}"
+  block:
+    - name: Reload systemd user daemon
+      listen: Restart plane services
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        scope: user
+
+    # Restart backend first, then frontend — same order as initial startup.
+    # Infra containers (redis, mq, minio) do not read plane.env so they
+    # don't need restarting on env changes; only restart them explicitly
+    # if their own Quadlet template changes.
+    - name: Restart backend services
+      listen: Restart plane services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: restarted
+        daemon_reload: true
+        scope: user
+      loop:
+        - api.service
+        - worker.service
+        - beat-worker.service
+        - migrator.service
+        - monitor.service
+
+    - name: Restart frontend services
+      listen: Restart plane services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        daemon_reload: true
+        state: restarted
+        scope: user
+      loop:
+        - web.service
+        - space.service
+        - admin.service
+        - live.service
+        - proxy.service
+
+    - name: Restart plane-minio
+      listen: Restart plane services
+      ansible.builtin.systemd_service:
+        name: plane-minio.service
+        daemon_reload: true
+        state: restarted
+        scope: user

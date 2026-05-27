@@ -1,0 +1,40 @@
+---
+- name: Install {{ paperless_app_name }} with Quadlet
+  become: true
+  become_user: "{{ paperless_service_user }}"
+  block:
+    - name: Gather {{ paperless_service_user }} uid/gid
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ paperless_service_user }}"
+
+    - name: Set uid/gid facts
+      ansible.builtin.set_fact:
+        paperless_service_user_uid: "{{ ansible_facts.getent_passwd[paperless_service_user][1] }}"
+        paperless_service_user_gid: "{{ ansible_facts.getent_passwd[paperless_service_user][2] }}"
+
+    - name: Create Quadlet files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "/home/{{ paperless_service_user }}/.config/containers/systemd/{{ item.dest }}"
+        owner: "{{ paperless_service_user }}"
+        group: "{{ paperless_service_user }}"
+        mode: "0644"
+      loop:
+        - {
+            src: paperless.network.j2,
+            dest: "{{ paperless_app_name }}.network",
+          }
+        - {
+            src: paperless-redis.volume.j2,
+            dest: "{{ paperless_app_name }}-redis.volume",
+          }
+        - {
+            src: paperless-redis.container.j2,
+            dest: "{{ paperless_app_name }}-redis.container",
+          }
+        - {
+            src: paperless.container.j2,
+            dest: "{{ paperless_app_name }}.container",
+          }
+      notify: Restart service

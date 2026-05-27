@@ -1,0 +1,9 @@
+collections:
+  - name: community.general
+  - name: containers.podman
+  - name: ansible.posix
+  - name: community.postgresql
+  - name: community.hashi_vault
+
+roles:
+  - name: geerlingguy.ntp

@@ -1,0 +1,7 @@
+---
+- name: Include user setup
+  become: true
+  ansible.builtin.import_tasks: user.yml
+
+- name: Include disk setup
+  ansible.builtin.import_tasks: disks.yml

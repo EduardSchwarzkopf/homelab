@@ -1,0 +1,38 @@
+---
+- name: Install {{ immich_app_name }} with Quadlet
+  become: true
+  become_user: "{{ immich_service_user }}"
+  block:
+    - name: Create podman db secret
+      containers.podman.podman_secret:
+        name: "{{ immich_db_password_secret_name }}"
+        data: "{{ immich_db_password }}"
+        state: present
+
+    - name: Create Quadlet files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "/home/{{ immich_service_user }}/.config/containers/systemd/{{ item.dest }}"
+        owner: "{{ immich_service_user }}"
+        group: "{{ immich_service_user }}"
+        mode: "0644"
+      loop:
+        - { src: immich.network.j2, dest: "{{ immich_app_name }}.network" }
+        - {
+            src: immich-redis.volume.j2,
+            dest: "{{ immich_app_name }}-redis.volume",
+          }
+        - {
+            src: immich-model-cache.volume.j2,
+            dest: "{{ immich_app_name }}-model-cache.volume",
+          }
+        - {
+            src: immich-redis.container.j2,
+            dest: "{{ immich_app_name }}-redis.container",
+          }
+        - {
+            src: immich-ml.container.j2,
+            dest: "{{ immich_app_name }}-ml.container",
+          }
+        - { src: immich.container.j2, dest: "{{ immich_app_name }}.container" }
+      notify: Restart service

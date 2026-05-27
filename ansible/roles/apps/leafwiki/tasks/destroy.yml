@@ -1,0 +1,59 @@
+---
+- name: Remove NPM proxy host
+  ansible.builtin.import_role:
+    name: nginx_proxy_manager
+    tasks_from: remove_proxy_hosts.yml
+  vars:
+    npm_proxy_hosts:
+      - domain_names:
+          - "{{ leafwiki_app_domain }}"
+
+- name: Uninstall leafwiki
+  ansible.builtin.import_tasks: uninstall.yml
+
+- name: Delete leafwiki secrets from Vault
+  ansible.builtin.import_role:
+    name: vault
+    tasks_from: delete_secrets.yml
+  vars:
+    vault_secret_path: "{{ leafwiki_app_name }}"
+
+- name: Cleanup Serve
+  become: true
+  block:
+    - name: Delete file glob
+      find:
+        paths: "{{ leafwiki_data_dir }}"
+        patterns: "*.*"
+      register: leafwiki_destroy_files_glob
+
+    - name: Remove leafwiki files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ leafwiki_destroy_files_glob.files }}"
+
+    - name: Stop and disable lingering for {{ leafwiki_service_user }}
+      command: loginctl disable-linger {{ leafwiki_service_user }}
+      ignore_errors: true
+
+    - name: Terminate all sessions for {{ leafwiki_service_user }}
+      command: loginctl terminate-user {{ leafwiki_service_user }}
+      ignore_errors: true
+
+    - name: Kill any remaining processes for {{ leafwiki_service_user }}
+      shell: "pkill -9 -u {{ leafwiki_service_user }} || true"
+
+    - name: Wait for processes to fully die
+      shell: "pgrep -u {{ leafwiki_service_user }}"
+      register: remaining_procs
+      retries: 5
+      delay: 2
+      until: remaining_procs.rc != 0
+      failed_when: false
+
+    - name: Remove user
+      ansible.builtin.user:
+        name: "{{ leafwiki_service_user }}"
+        state: absent
+        remove: true

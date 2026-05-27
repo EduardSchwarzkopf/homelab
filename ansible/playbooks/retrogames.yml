@@ -1,0 +1,4 @@
+- name: Setup retrogames archives
+  hosts: media
+  roles:
+    - role: retrogames

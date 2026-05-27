@@ -1,0 +1,6 @@
+- name: "Check if {{ proxy_host.domain_names | join(', ') }} already exists"
+  ansible.builtin.set_fact:
+    existing_host: >-
+      {{ existing_hosts.json |
+         selectattr('domain_names', 'contains', proxy_host.domain_names[0]) |
+         list | first | default(None) }}

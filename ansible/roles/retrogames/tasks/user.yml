@@ -1,0 +1,12 @@
+- name: Ensure group exists
+  ansible.builtin.group:
+    name: "{{ retrogames_group }}"
+    state: present
+
+- name: Ensure user exists
+  ansible.builtin.user:
+    name: "{{ retrogames_user }}"
+    group: "{{ retrogames_group }}"
+    create_home: true
+    shell: /bin/bash
+    state: present
