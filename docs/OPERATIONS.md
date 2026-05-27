@@ -6,7 +6,6 @@
 - [Monitoring & Observability](#monitoring--observability)
 - [Maintenance Procedures](#maintenance-procedures)
 - [Disaster Recovery](#disaster-recovery)
-- [Performance Tuning](#performance-tuning)
 - [Troubleshooting Guide](#troubleshooting-guide)
 - [Runbooks](#runbooks)
 - [Escalation Procedures](#escalation-procedures)
@@ -15,138 +14,132 @@
 
 ## Monitoring & Observability
 
-### System Monitoring
+### VM & Application Monitoring (Ansible + Podman)
 
-**Key Metrics to Monitor**:
+**Primary tools**: Proxmox VE web UI for VM health; SSH into individual VMs for application-level inspection.
 
-Primary tool: **k9s** for cluster interaction and monitoring
+**VM Health**:
+- Check VM status, CPU, memory, and disk usage via the Proxmox web UI or `qm list` on the Proxmox host
+- Review VM console output for boot errors or kernel panics
 
-1. **Node Health**
-   ```bash
-   # Check node status
-   kubectl get nodes
-   kubectl describe node <node-name>
-   
-   # Check node resources
-   kubectl top nodes
-   kubectl top pods -A
-   ```
-
-2. **Cluster Health**
-   ```bash
-   # Check cluster status
-   kubectl cluster-info
-   kubectl get componentstatuses
-   
-   # Check API server
-   kubectl get endpoints kubernetes
-   ```
-
-3. **Storage Health**
-   ```bash
-   # Check Longhorn status
-   kubectl get pods -n longhorn-system
-   kubectl get storageclass
-   kubectl get pvc -A
-   
-   # Check Longhorn UI
-   kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80
-   # Access: http://localhost:8080
-   ```
-
-4. **Network Health**
-   ```bash
-   # Check network policies
-   kubectl get networkpolicies -A
-   
-   # Check Cilium status
-   kubectl get pods -n kube-system -l k8s-app=cilium
-   
-   # Test connectivity
-   kubectl run -it --rm debug --image=busybox --restart=Never -- ping <pod-ip>
-   ```
-
-### Application Monitoring
-
-**Check Application Status**:
+**Container Health**:
 ```bash
-# List all applications
-kubectl get applications -A
+# List running containers on a VM
+podman ps
 
-# Check application pods
-kubectl get pods -n <app-namespace>
+# Check container logs
+podman logs <container-name>
 
-# Check application logs
-kubectl logs -n <app-namespace> <pod-name>
-
-# Check application events
-kubectl get events -n <app-namespace>
+# Check systemd service status (containers are managed as systemd services via Quadlet)
+systemctl status <service-name>
+journalctl -u <service-name> -f
 ```
 
-**Monitor Application Performance**:
+**Database Health**:
 ```bash
-# Check resource usage
-kubectl top pods -n <app-namespace>
+# Check PostgreSQL is accepting connections
+pg_isready -h localhost
 
-# Check pod metrics
-kubectl get --raw /apis/metrics.k8s.io/v1beta1/pods -n <app-namespace>
+# Review PostgreSQL logs via the container
+podman logs <postgres-container>
 ```
+
+**ZFS Storage Health**:
+```bash
+# Check pool status and health
+zpool status
+
+# Check dataset usage
+zfs list
+
+# Check for scrub errors
+zpool status -v
+```
+
+---
+
+### Kubernetes Monitoring
+
+**Primary tools**: `k9s` for interactive cluster monitoring; ArgoCD UI for application sync status.
+
+**Node Health**:
+```bash
+kubectl get nodes
+kubectl describe node <node-name>
+kubectl top nodes
+```
+
+**Cluster Health**:
+```bash
+kubectl cluster-info
+kubectl get pods -A
+kubectl top pods -A
+```
+
+**Storage Health**:
+```bash
+# Check Longhorn components
+kubectl get pods -n longhorn-system
+
+# Check PVC status across all namespaces
+kubectl get pvc -A
+
+# Access the Longhorn UI
+kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80
+```
+
+**Network Health**:
+```bash
+# Check ingress resources
+kubectl get ingress -A
+
+# Check Cilium pod status
+kubectl get pods -n kube-system -l k8s-app=cilium
+
+# Check MetalLB allocations
+kubectl get svc -A --field-selector spec.type=LoadBalancer
+```
+
+**ArgoCD Sync Status**:
+```bash
+# List all ArgoCD applications and their sync state
+kubectl get applications -n argocd
+
+# Describe a specific application
+kubectl describe application <app-name> -n argocd
+```
+
+---
 
 ### Backup Monitoring
 
 **Check Backup Status**:
 ```bash
-# Check backup jobs
-pvesh get /nodes/<node>/storage/<storage>/content
-
-# Check backup logs
-tail -f /var/log/proxmox-backup/proxmox-backup-proxy.log
-
-# List backups
+# List all backups in PBS
 proxmox-backup-client list
+
+# Verify a specific backup
+proxmox-backup-client verify <backup-id>
 ```
 
-**Backup Metrics**:
-- Backup frequency: Daily (Tier 1), Weekly (Tier 2), Monthly (Tier 3), Quarterly (Tier 4)
-- Backup duration: 5-60 minutes depending on tier
-- Backup size: Varies by data volume
-- Retention: 30-180 days depending on tier
+- Backup frequency targets: daily (Tier 1), weekly (Tier 2), monthly (Tier 3), quarterly (Tier 4)
+- Check PBS storage usage regularly to ensure capacity headroom
 
-**See**: [BACKUP.md](operations/BACKUP.md) for detailed backup procedures
+**See**: [BACKUP.md](operations/BACKUP.md) for detailed procedures and tier definitions.
 
-### Alerting 
+---
 
-Currently, no custom alerts are configured. Monitoring is done manually via k9s and ArgoCD. Default Kubernetes alerts (if any) are the only alerts in place.
+### Alerting
 
-**Potential Alerts to Configure** (for future implementation):
+No custom alerting is currently configured. Monitoring is done manually via k9s, the Proxmox UI, and ArgoCD.
 
-1. **Node Alerts**
-   - Node not ready
-   - Node disk pressure
-   - Node memory pressure
-   - Node CPU pressure
-
-2. **Pod Alerts**
-   - Pod CrashLoopBackOff
-   - Pod pending >5 minutes
-   - Pod restart rate high
-
-3. **Storage Alerts**
-   - PVC usage >80%
-   - PVC usage >95%
-   - Longhorn replica degraded
-   - Longhorn volume unhealthy
-
-4. **Backup Alerts**
-   - Backup job failed
-   - Backup job missed
-   - Backup storage >80%
-   - Backup storage >95%
-
-5. **Network Alerts**
-   - Network latency high
-   - Packet loss detected
-   - DNS resolution failures
+**Recommended future alerts**:
+- Node not ready / disk or memory pressure
+- Pod in `CrashLoopBackOff` or pending for more than 5 minutes
+- Longhorn replica degraded or volume unhealthy
+- PVC usage above 80% / 95%
+- PBS backup job failure or missed schedule
+- PBS storage above 80%
 
 ---
 
@@ -154,135 +147,97 @@ Currently, no custom alerts are configured. Monitoring is done manually via k9s 
 
 ### Regular Maintenance Schedule
 
-**Daily**:
-- Monitor cluster health via k9s
-- Backup status notifications via email
-- Monitor storage usage as needed
+**Daily**: Review cluster and VM health; confirm backup completion notifications.
 
-**Weekly**:
-- Review node metrics
-- Check for pending updates
-- Verify backup integrity
-- Review security logs
+**Weekly**: Check for pending OS and application updates; verify backup integrity; review ZFS scrub results; review security logs.
 
-**Monthly**:
-- Update system components
-- Test disaster recovery
-- Review capacity planning
-- Audit access logs
+**Monthly**: Apply system component updates; test a restore from backup on non-critical data; review capacity planning.
 
-**Quarterly**:
-- Major version updates
-- Comprehensive security audit
-- Capacity planning review
-- Disaster recovery drill
+**Quarterly**: Major version updates; comprehensive security audit; disaster recovery drill.
 
-### Node Maintenance
+---
 
-**Preferred Approach: Redeploy Node**:
+### VM Maintenance (Ansible-managed)
 
-Rather than updating nodes manually, the preferred approach is to redeploy the node using Infrastructure as Code:
+Prefer redeploying VMs over in-place updates where possible. For minor package updates, Ansible handles idempotent re-application:
 
 ```bash
-# Destroy old node
-cd tofu/infrastructure
-tofu destroy -target=module.kubernetes_node_<name>
+# Re-run the base configuration playbook against a specific host
+ansible-playbook -i ansible/inventory playbooks/setup.yml --limit <hostname>
 
-# Provision new node
-tofu apply -target=module.kubernetes_node_<name>
+# Run a specific app playbook
+ansible-playbook -i ansible/inventory playbooks/apps.yml --limit <hostname>
+```
 
-# Verify node joined cluster
+For OS-level maintenance that requires a reboot, snapshot the VM in Proxmox first, reboot, and verify application health before removing the snapshot.
+
+---
+
+### Kubernetes Node Maintenance
+
+**Preferred approach — Redeploy via IaC**:
+
+Rather than patching nodes in place, the preferred approach is to destroy and reprovision the node using OpenTofu. This guarantees a clean, reproducible state and leverages the immutable infrastructure model.
+
+```bash
+# Destroy the node
+cd tofu/
+tofu destroy -target=<node_resource>
+
+# Provision a fresh node
+tofu apply -target=<node_resource>
+
+# Confirm the node joined the cluster
 kubectl get nodes
 ```
 
-This approach leverages the power of IaC and ensures a clean, reproducible state.
+**Alternative — Talos upgrade** (when a full redeploy is not practical):
 
-**Alternative: Manual Updates** (if needed):
+Use `talosctl upgrade` to perform an in-place OS upgrade. Check the Talos documentation for the correct image reference for the target version before running.
 
-```bash
-# Check available updates
-talosctl -n <node-ip> upgrade --check
+After any node operation, verify all pods are running and Longhorn volumes are healthy before proceeding.
 
-# Perform upgrade
-talosctl -n <node-ip> upgrade --image ghcr.io/siderolabs/talos:v1.x.x
-
-# Verify upgrade
-talosctl -n <node-ip> version
-```
-
-### Kubernetes Component Updates
-
-**Update Control Plane**:
-```bash
-# Check available versions
-kubectl version
-
-# Update via Talos
-talosctl -n <control-plane-ip> upgrade --image ghcr.io/siderolabs/kubernetes:v1.x.x
-```
-
-**Update Worker Nodes**:
-```bash
-# Drain node
-kubectl drain <node-name> --ignore-daemonsets
-
-# Update via Talos
-talosctl -n <worker-ip> upgrade --image ghcr.io/siderolabs/kubernetes:v1.x.x
-
-# Uncordon node
-kubectl uncordon <node-name>
-```
+---
 
 ### Storage Maintenance
 
-**Longhorn Maintenance**:
+**Longhorn**:
 ```bash
-# Check Longhorn status
+# Confirm all Longhorn pods are healthy before and after maintenance
 kubectl get pods -n longhorn-system
 
-# Update Longhorn
-helm upgrade longhorn longhorn/longhorn -n longhorn-system
-
-# Verify update
-kubectl get pods -n longhorn-system
+# Use the Longhorn UI to monitor volume replica health during node operations
+kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80
 ```
 
-**ZFS Maintenance**:
+**ZFS** (run on Proxmox host or NAS VM):
 ```bash
-# Check pool status
-zpool status
-
-# Check dataset usage
-zfs list
-
-# Scrub pool (weekly)
+# Weekly pool scrub — schedule via cron
 zpool scrub <pool-name>
 
-# Check scrub status
+# Check scrub results
 zpool status <pool-name>
+
+# Monitor dataset usage
+zfs list -r <pool-name>
 ```
+
+---
 
 ### Backup Maintenance
 
-**Verify Backup Integrity**:
 ```bash
-# List backups
+# List all backups
 proxmox-backup-client list
 
-# Verify backup
+# Verify a specific backup's integrity
 proxmox-backup-client verify <backup-id>
 
-# Check backup size
-proxmox-backup-client list --output-format json | jq '.[] | {id, size}'
-```
-
-**Cleanup Old Backups**:
-```bash
-# Manual cleanup (respecting retention policies)
+# Remove a backup manually (respect retention policies before doing this)
 proxmox-backup-client forget <backup-id>
-
-# Or configure automatic cleanup via retention policies
 ```
+
+Retention policies are configured in PBS. Manual removal should only be done outside of policy in exceptional circumstances.
 
 ---
 
@@ -290,226 +245,209 @@ proxmox-backup-client forget <backup-id>
 
 ### Recovery Objectives
 
-| Tier              | RPO      | RTO      | Procedure                          |
-| ----------------- | -------- | -------- | ---------------------------------- |
-| Tier 1 (Critical) | 24 hours | 4 hours  | Full restore from daily backup     |
-| Tier 2 (Standard) | 7 days   | 24 hours | Full restore from weekly backup    |
-| Tier 3 (Dev)      | 30 days  | 48 hours | Full restore from monthly backup   |
-| Tier 4 (Cache)    | 90 days  | 1 week   | Full restore from quarterly backup |
+| Tier              | RPO      | RTO      | Backup Schedule | Example Data             |
+| ----------------- | -------- | -------- | --------------- | ------------------------ |
+| Tier 1 (Critical) | 24 hours | 4 hours  | Daily           | Production databases     |
+| Tier 2 (Standard) | 7 days   | 24 hours | Weekly          | Application state        |
+| Tier 3 (Dev)      | 30 days  | 48 hours | Monthly         | Dev/staging environments |
+| Tier 4 (Cache)    | 90 days  | 1 week   | Quarterly       | Regenerable data         |
 
 ### Backup & Recovery Procedures
 
-**See**: [BACKUP.md](operations/BACKUP.md) for detailed procedures
+**See**: [BACKUP.md](operations/BACKUP.md) for detailed restore procedures per tier.
+
+---
 
 ### Disaster Recovery Scenarios
 
-#### Scenario 1: Single Node Failure 
+#### Scenario 1: Single VM Failure (Ansible-managed)
 
-**Impact**: Loss of pods on failed node
+**Impact**: Applications on the failed VM are unavailable.
 
-**Recovery Procedure**:
-1. With only one worker node, pod rescheduling is not possible
-2. Redeploy the failed node using Infrastructure as Code
-3. Verify node joined cluster
-4. Verify all pods are running
+**Recovery**:
+1. Restore the VM from the most recent PBS backup, or redeploy via OpenTofu and re-run Ansible
+2. Verify all containers started successfully (`podman ps`)
+3. Verify application health via Nginx Proxy Manager
 
-**Time**: 5-15 minutes
+**Time**: 15–45 minutes depending on data volume
 
-**Runbook**: [Node Recovery Runbook](#node-recovery-runbook)
+---
 
-#### Scenario 2: Storage Failure
+#### Scenario 2: Single Kubernetes Node Failure
 
-**Impact**: Loss of persistent data
+**Impact**: Pods on the failed node are unavailable. With a single worker node, rescheduling is not possible until the node is restored.
 
-**Recovery Procedure**:
-1. Identify failed storage
-2. Restore from Longhorn snapshot (if available)
-3. Or restore from backup
-4. Verify data integrity
-5. Resume application
+**Recovery**:
+1. Redeploy the node using OpenTofu (see [Node Recovery Runbook](#node-recovery-runbook))
+2. Verify Longhorn volumes reattach and replicas are healthy
+3. Verify all pods are running
 
-**Time**: 10-30 minutes
+**Time**: 10–20 minutes
+
+---
+
+#### Scenario 3: Storage Failure
+
+**Impact**: Loss of persistent data for affected applications.
+
+**Recovery**:
+1. Check whether a Longhorn snapshot can be used for recovery (preferred — no data loss since last snapshot)
+2. If not, restore from the PBS backup appropriate to the data's tier
+3. Verify data integrity before resuming the application
+
+**Time**: 15–60 minutes depending on data volume
 
 **Runbook**: [Storage Recovery Runbook](#storage-recovery-runbook)
 
-#### Scenario 3: Control Plane Failure
+---
 
-**Impact**: Cluster management unavailable, but pods continue running
+#### Scenario 4: Control Plane Failure
 
-**Recovery Procedure**:
-1. Identify failed control plane node
-2. Repair or replace node
-3. Rejoin to cluster
-4. Verify cluster health
-5. Resume normal operations
+**Impact**: Kubernetes API is unavailable; running pods continue serving traffic but cannot be managed.
 
-**Time**: 15-30 minutes
+**Recovery**:
+1. Redeploy the control plane node via OpenTofu
+2. Verify `kubectl` access is restored
+3. Verify all workloads are in the expected state
+
+**Time**: 15–30 minutes
 
 **Runbook**: [Control Plane Recovery Runbook](#control-plane-recovery-runbook)
 
-#### Scenario 4: Complete Cluster Failure
+---
 
-**Impact**: All services unavailable
+#### Scenario 5: Complete Cluster Rebuild
 
-**Recovery Procedure**:
-1. Restore from backup
-2. Rebuild cluster from scratch
-3. Restore persistent data
-4. Verify all services
-5. Resume normal operations
+**Impact**: All Kubernetes-managed services unavailable.
 
-**Time**: 1-2 hours
+**Recovery**:
+1. Provision new nodes via OpenTofu
+2. Bootstrap cluster components (`kubernetes/bootstrap/`)
+3. Allow ArgoCD to sync applications from Git
+4. Restore persistent data from PBS backups
+5. Verify all applications are healthy
+
+**Time**: 1–2 hours
 
 **Runbook**: [Cluster Recovery Runbook](#cluster-recovery-runbook)
 
+---
+
 ### Testing Disaster Recovery
 
-Given the scale of the homelab and time constraints, intensive backup testing is not performed. However, backups are regularly verified for integrity and recovery procedures are documented.
+Full disaster recovery drills are not performed regularly given homelab scale. The following lighter-weight verification is done instead:
 
-**Backup Verification** (as time permits):
-- Verify backup integrity via `proxmox-backup-client verify`
-- Test restore procedures on non-critical data
-- Document any issues found
-
-**Recovery Procedures**:
-- Documented runbooks for each tier
-- Tested manually when needed
-- Automated recovery via Infrastructure as Code
+- **Backup integrity**: Run `proxmox-backup-client verify` on a sample of recent backups monthly
+- **Restore test**: Test restore of non-critical data (Tier 3 or Tier 4) quarterly
+- **Runbook review**: Review runbooks quarterly and update any steps that have drifted
 
 ---
 
 ## Troubleshooting Guide
 
-### Cluster Health Issues
+### VM / Container Issues
 
-**Problem**: Cluster not responding
+**Problem**: Container not starting
 ```bash
-# Check API server
-kubectl cluster-info
+# Check systemd service status
+systemctl status <service-name>
+journalctl -u <service-name> --no-pager -n 50
 
-# Check control plane nodes
-kubectl get nodes -l node-role.kubernetes.io/control-plane
+# Check container logs directly
+podman logs <container-name>
 
-# Check etcd
-kubectl get endpoints etcd
-
-# Restart API server if needed
-kubectl rollout restart deployment/kube-apiserver -n kube-system
+# Inspect the container for misconfiguration
+podman inspect <container-name>
 ```
 
-**Problem**: Nodes not ready
+**Problem**: Application not reachable via Nginx Proxy Manager
+- Confirm the container is running (`podman ps`)
+- Confirm the Nginx Proxy Manager proxy host is configured and the upstream port matches
+- Check the NPM container logs for proxy errors
+
+**Problem**: Database connection refused
 ```bash
-# Check node status
-kubectl describe node <node-name>
+# Verify PostgreSQL is listening
+pg_isready -h localhost -p 5432
 
-# Check kubelet logs
-talosctl -n <node-ip> logs kubelet
+# Check the PostgreSQL container is running
+podman ps | grep postgres
 
-# Check network connectivity
-ping <node-ip>
-
-# Reboot node if needed
-talosctl -n <node-ip> reboot
+# Check PostgreSQL logs
+podman logs <postgres-container-name>
 ```
 
-### Pod Issues
+---
 
-**Monitoring Tools**: k9s and ArgoCD are also used to check pod status and application health.
+### Kubernetes Issues
 
-**Problem**: Pod stuck in pending
+**Problem**: Pod stuck in Pending
 ```bash
-# Check pod events
+# Check events for scheduling failures
 kubectl describe pod <pod-name> -n <namespace>
 
-# Check resource availability
+# Check available node resources
 kubectl top nodes
 kubectl describe node <node-name>
 
-# Check storage availability
+# Check PVC binding (common cause)
 kubectl get pvc -n <namespace>
-
-# Check network policies
-kubectl get networkpolicies -n <namespace>
+kubectl describe pvc <pvc-name> -n <namespace>
 ```
 
-**Problem**: Pod CrashLoopBackOff
+**Problem**: Pod in CrashLoopBackOff
 ```bash
-# Check pod logs
+# Check current and previous container logs
 kubectl logs <pod-name> -n <namespace>
 kubectl logs <pod-name> -n <namespace> --previous
 
-# Check pod events
+# Check pod events and resource limits
 kubectl describe pod <pod-name> -n <namespace>
-
-# Check resource limits
-kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Limits"
-
-# Check health checks
-kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Liveness"
 ```
 
-### Storage Issues
-
-**Problem**: PVC stuck in pending
+**Problem**: Node not Ready
 ```bash
-# Check PVC status
-kubectl describe pvc <pvc-name> -n <namespace>
+kubectl describe node <node-name>
 
-# Check storage class
+# Check kubelet logs via talosctl
+talosctl -n <node-ip> logs kubelet
+
+# Reboot the node as a last resort
+talosctl -n <node-ip> reboot
+```
+
+**Problem**: PVC stuck in Pending
+```bash
+# Check storage class exists
 kubectl get storageclass
 
-# Check Longhorn status
+# Check Longhorn pods are healthy
 kubectl get pods -n longhorn-system
 
-# Check available storage
-kubectl get nodes -o json | jq '.items[] | {name: .metadata.name, allocatable: .status.allocatable}'
+# Describe the PVC for events
+kubectl describe pvc <pvc-name> -n <namespace>
 ```
 
-**Problem**: Longhorn volume unhealthy
+**Problem**: Application out of sync in ArgoCD
 ```bash
-# Check Longhorn UI
-kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80
+# Check sync status and any error messages
+kubectl describe application <app-name> -n argocd
 
-# Check volume status
-kubectl get volumes -n longhorn-system
-
-# Check replica status
-kubectl get replicas -n longhorn-system
-
-# Rebuild replicas if needed
-# (via Longhorn UI)
+# Trigger a manual sync
+kubectl patch application <app-name> -n argocd \
+  --type merge -p '{"operation": {"initiatedBy": {"username": "admin"}, "sync": {}}}'
 ```
 
-### Network Issues
-
-**Problem**: Pods cannot communicate
+**Problem**: External traffic not reaching an application
 ```bash
-# Check network policies
-kubectl get networkpolicies -A
-
-# Test connectivity
-kubectl run -it --rm debug --image=busybox --restart=Never -- ping <pod-ip>
-
-# Check DNS resolution
-kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup <service-name>
-
-# Check Cilium status
-kubectl get pods -n kube-system -l k8s-app=cilium
-```
-
-**Problem**: External connectivity issues
-```bash
-# Check ingress status
+# Check ingress resource exists and has an address assigned
 kubectl get ingress -A
 
-# Check ingress controller
+# Check ingress-nginx pods are running
 kubectl get pods -n ingress-nginx
 
-# Check ingress logs
-kubectl logs -n ingress-nginx <nginx-pod>
-
-# Test ingress
-curl -v http://<ingress-ip>/<path>
+# Check MetalLB assigned an IP to the LoadBalancer service
+kubectl get svc -n ingress-nginx
 ```
 
 ---
@@ -518,220 +456,135 @@ curl -v http://<ingress-ip>/<path>
 
 ### Node Recovery Runbook
 
-**Objective**: Recover from single node failure
+**Objective**: Restore a failed Kubernetes node using Infrastructure as Code.
 
-**Approach**: Use Infrastructure as Code to redeploy the node
-
-**Steps**:
-
-1. **Identify Failed Node**
+1. Confirm the node is unavailable:
    ```bash
    kubectl get nodes
-   # Look for NotReady status
    ```
 
-2. **Destroy Failed Node**
+2. Destroy the failed node resource in OpenTofu:
    ```bash
-   cd tofu/infrastructure
-   tofu destroy -target=module.kubernetes_node_<name>
+   cd tofu/
+   tofu destroy -target=<node_resource>
    ```
 
-3. **Provision New Node**
+3. Provision a replacement node:
    ```bash
-   tofu apply -target=module.kubernetes_node_<name>
+   tofu apply -target=<node_resource>
    ```
 
-4. **Verify Node Health**
+4. Confirm the new node joined and is Ready:
    ```bash
    kubectl get nodes
    kubectl describe node <node-name>
    ```
 
-5. **Verify Pods Are Running**
+5. Confirm all pods are running and no pods are stuck Pending:
    ```bash
    kubectl get pods -A
    ```
 
-**Expected Duration**: 5-15 minutes
+6. Confirm Longhorn volume replicas are healthy via the Longhorn UI or:
+   ```bash
+   kubectl get volumes -n longhorn-system
+   ```
 
-**Success Criteria**:
-- Node shows Ready status
-- All pods are running
-- No pending pods
+**Expected duration**: 10–20 minutes
+**Success criteria**: Node shows Ready; all pods running; Longhorn volumes healthy.
 
 ---
 
 ### Storage Recovery Runbook
 
-**Objective**: Recover from storage failure
+**Objective**: Recover from a persistent storage failure.
 
-**Prerequisites**:
-- Backups are available
-- Cluster is healthy
-
-**Steps**:
-
-1. **Identify Failed Storage**
+1. Identify the affected PVC and its Longhorn volume:
    ```bash
-   kubectl describe pvc <pvc-name>
-   kubectl get pv <pv-name>
-   ```
-
-2. **Check Longhorn Status**
-   ```bash
+   kubectl describe pvc <pvc-name> -n <namespace>
    kubectl get volumes -n longhorn-system
-   kubectl get replicas -n longhorn-system
    ```
 
-3. **Restore from Snapshot** (if available)
-   ```bash
-   # Via Longhorn UI
-   # 1. Select volume
-   # 2. Select snapshot
-   # 3. Click Restore
-   ```
+2. Check whether a usable Longhorn snapshot exists (via the Longhorn UI). If so, restore from the snapshot — this is the fastest path with the least data loss.
 
-4. **Or Restore from Backup**
-   ```bash
-   # Restore VM from backup
-   proxmox-backup-client restore <backup-id>
-   
-   # Or restore PVC from backup
-   # (application-specific procedure)
-   ```
+3. If no usable snapshot exists, restore from the PBS backup appropriate to the data's tier. See [BACKUP.md](operations/BACKUP.md) for restore procedures.
 
-5. **Verify Data Integrity**
+4. After restore, verify data integrity by reviewing application logs:
    ```bash
-   # Check application logs
    kubectl logs -n <namespace> <pod-name>
-   
-   # Verify data consistency
-   # (application-specific checks)
    ```
 
-6. **Resume Application**
+5. Restart the application if needed:
    ```bash
-   # Restart pods if needed
    kubectl rollout restart deployment/<deployment-name> -n <namespace>
    ```
 
-**Expected Duration**: 10-30 minutes
-
-**Success Criteria**:
-- PVC is bound
-- Application is running
-- Data is accessible
+**Expected duration**: 15–60 minutes depending on data volume
+**Success criteria**: PVC bound; application running; data accessible and consistent.
 
 ---
 
 ### Control Plane Recovery Runbook
 
-**Objective**: Recover from control plane failure
+**Objective**: Restore a failed Kubernetes control plane node.
 
-**Approach**: Use Infrastructure as Code to redeploy the node
-
-**Steps**:
-
-1. **Identify Failed Control Plane Node**
+1. Confirm control plane is unreachable:
    ```bash
    kubectl get nodes -l node-role.kubernetes.io/control-plane
    ```
 
-2. **Destroy Failed Node**
+2. Destroy and reprovision via OpenTofu:
    ```bash
-   cd tofu/infrastructure
-   tofu destroy -target=module.kubernetes_controlplane_<name>
+   cd tofu/
+   tofu destroy -target=<controlplane_resource>
+   tofu apply -target=<controlplane_resource>
    ```
 
-3. **Provision New Node**
-   ```bash
-   tofu apply -target=module.kubernetes_controlplane_<name>
-   ```
-
-4. **Verify Cluster Health**
+3. Verify API access and cluster health:
    ```bash
    kubectl cluster-info
    kubectl get nodes
-   ```
-
-5. **Verify All Services**
-   ```bash
    kubectl get pods -A
    ```
 
-**Expected Duration**: 15-30 minutes
-
-**Success Criteria**:
-- All control plane nodes are Ready
-- API server is responding
-- etcd is healthy
+**Expected duration**: 15–30 minutes
+**Success criteria**: API server responding; all nodes Ready; all pods running.
 
 ---
 
 ### Cluster Recovery Runbook
 
-**Objective**: Recover from complete cluster failure
+**Objective**: Rebuild the Kubernetes cluster from scratch after a complete failure.
 
-**Approach**: Use Infrastructure as Code to redeploy the entire cluster
+1. Assess the failure: determine what data is at risk and identify the recovery point from PBS.
 
-**Steps**:
-
-1. **Assess Damage**
-   - Determine what data is lost
-   - Identify recovery point
-   - Plan recovery sequence
-
-2. **Destroy Old Cluster**
+2. Destroy all cluster resources:
    ```bash
-   cd tofu/infrastructure
+   cd tofu/
    tofu destroy
    ```
 
-3. **Provision New Cluster**
+3. Provision fresh nodes:
    ```bash
    tofu apply
    ```
 
-4. **Bootstrap Kubernetes**
+4. Bootstrap cluster components:
    ```bash
-   cd kubernetes/bootstrap
-   kubectl apply -k .
+   kubectl apply -k kubernetes/bootstrap/
    ```
 
-5. **Restore Persistent Data**
+5. Wait for ArgoCD to sync all applications from Git. Verify sync status:
    ```bash
-   # Restore from backups
-   proxmox-backup-client restore <backup-id>
-   
-   # Or restore PVCs from backups
-   # (application-specific procedure)
+   kubectl get applications -n argocd
    ```
 
-6. **Restore Applications**
-   ```bash
-   # Sync ArgoCD
-   argocd app sync <app-name>
-   
-   # Or manually deploy
-   kubectl apply -f kubernetes/apps/
-   ```
+6. Restore persistent data from PBS backups. See [BACKUP.md](operations/BACKUP.md) for restore procedures by tier.
 
-7. **Verify All Services**
-   ```bash
-   kubectl get pods -A
-   kubectl get ingress -A
-   
-   # Test applications
-   curl http://<app-domain>
-   ```
+7. Verify all applications are healthy and reachable.
 
-**Expected Duration**: 1-2 hours
-
-**Success Criteria**:
-- All nodes are Ready
-- All pods are running
-- All applications are accessible
-- All data is restored
+**Expected duration**: 1–2 hours
+**Success criteria**: All nodes Ready; all pods running; all applications reachable; all data restored and consistent.
 
 ---
 
@@ -739,74 +592,37 @@ curl -v http://<ingress-ip>/<path>
 
 ### Severity Levels
 
-**Critical** (P1):
-- Complete cluster failure
-- Data loss
-- Security breach
-- All services unavailable
-
-**High** (P2):
-- Single node failure
-- Storage failure
-- Control plane degradation
-- Some services unavailable
-
-**Medium** (P3):
-- Pod crashes
-- Network latency
-- Performance degradation
-- Single pod unavailable
-
-**Low** (P4):
-- Minor issues
-- Documentation updates
-- Optimization opportunities
+| Severity      | Criteria                                   | Examples                                      |
+| ------------- | ------------------------------------------ | --------------------------------------------- |
+| P1 — Critical | All services unavailable or data loss      | Complete cluster failure, PBS inaccessible    |
+| P2 — High     | Major service degraded or at risk          | Single node failure, storage replica degraded |
+| P3 — Medium   | Single application unavailable or degraded | Pod crash, ingress misconfiguration           |
+| P4 — Low      | Minor issue, no user impact                | Log noise, non-urgent update pending          |
 
 ### Escalation Path
 
-**Level 1**: Automated monitoring and alerting
-- Monitor cluster health
-- Trigger alerts
-- Attempt automatic recovery
+1. **Self-service**: Check k9s, ArgoCD UI, Proxmox UI, and container logs for immediate diagnosis
+2. **Runbooks**: Follow the appropriate runbook in this document or in [BACKUP.md](operations/BACKUP.md)
+3. **Community resources**: Kubernetes, Talos, Longhorn, and Proxmox community forums and documentation
+4. **Vendor support**: Proxmox commercial support (if applicable)
 
-**Level 2**: Manual investigation
-- Check logs and metrics
-- Identify root cause
-- Attempt manual recovery
+### External Resources
 
-**Level 3**: Expert consultation
-- Consult documentation
-- Review decision records
-- Implement fix
-
-**Level 4**: External support
-- Contact vendor support
-- Consult community
-- Implement workaround
-
-### Contact Information
-
-**Internal**:
-- Infrastructure team: [contact info]
-- On-call engineer: [contact info]
-
-**External**:
-- Proxmox support: https://www.proxmox.com/en/support
-- Kubernetes community: https://kubernetes.io/community/
-- OpenTofu community: https://opentofu.org/community/
+- [Proxmox Support](https://www.proxmox.com/en/support)
+- [Kubernetes Community](https://kubernetes.io/community/)
+- [Talos Linux Docs](https://www.talos.dev/latest/introduction/what-is-talos/)
+- [Longhorn Docs](https://longhorn.io/docs/)
+- [OpenTofu Community](https://opentofu.org/community/)
 
 ---
 
 ## References
 
-- [BACKUP.md](operations/BACKUP.md) - Backup procedures
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
-- [SETUP.md](SETUP.md) - Initial setup guide
-- [Kubernetes Operations](https://kubernetes.io/docs/tasks/administer-cluster/)
-- [Proxmox Operations](https://pve.proxmox.com/wiki/Operations)
+- [BACKUP.md](operations/BACKUP.md) — Backup tier definitions, schedules, retention policies, and restore procedures
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System architecture, data flows, and design decisions
 
 ---
 
-**Last Updated**: November 2025  
-**Status**: Active  
+**Last Updated**: May 2026
+**Status**: Active
 **Maintainer**: Eduard

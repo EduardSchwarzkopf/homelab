@@ -1,6 +1,6 @@
 # Portfolio: Homelab Infrastructure Project
 
-> A comprehensive portfolio piece demonstrating infrastructure engineering, DevOps practices, security-first design, and decision-making skills.
+> A portfolio piece demonstrating infrastructure engineering, DevOps practices, security-first design, and principled decision-making.
 
 **Table of Contents**
 - [Executive Summary](#executive-summary)
@@ -9,7 +9,6 @@
 - [Key Achievements](#key-achievements)
 - [Problem-Solving Examples](#problem-solving-examples)
 - [Lessons Learned](#lessons-learned)
-- [Technical Depth](#technical-depth)
 
 ---
 
@@ -17,22 +16,19 @@
 
 This homelab project demonstrates **enterprise-grade infrastructure engineering** at a personal scale. It showcases:
 
-- **Architecture & Design**: Multi-layered system design with clear separation of concerns
-- **DevOps Practices**: Infrastructure as Code, CI/CD, containerization, Kubernetes
+- **Architecture & Design**: Layered system design with clear separation of concerns
+- **DevOps Practices**: Infrastructure as Code, GitOps, containerisation, Kubernetes
 - **Security**: Immutable infrastructure, secrets management, RBAC, audit logging
 - **Decision-Making**: Principled technology choices with documented trade-offs
-- **Operations**: Backup strategies, disaster recovery, monitoring, runbooks
-- **Communication**: Clear documentation for multiple audiences
+- **Operations**: Tiered backup strategies, disaster recovery planning, operational runbooks
+- **Communication**: Clear documentation maintained across multiple audiences
 
 **Project Scope**:
-- 7 architectural layers (virtualization → applications)
-- 5 major technology decisions (documented in ADRs)
-- 4-tier backup strategy with differentiated RPO/RTO
-- 2-6 node Kubernetes cluster
-- 5+ deployed applications
+- Hybrid deployment architecture: Ansible + Podman (active) and Kubernetes/Talos (in progress)
+- 5 major technology decisions, each captured in an Architecture Decision Record
+- 4-tier backup strategy with differentiated RPO/RTO targets
+- Multiple self-hosted applications across purpose-built VMs
 - 100% Infrastructure as Code
-
-**Time Investment**: 200+ hours of design, implementation, and documentation
 
 **For detailed architecture information, see**: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -45,241 +41,137 @@ This homelab project demonstrates **enterprise-grade infrastructure engineering*
 **Skills**:
 - ✅ Infrastructure as Code (OpenTofu/Terraform)
 - ✅ Kubernetes cluster design and management
-- ✅ Virtualization and hypervisor management (Proxmox)
+- ✅ Virtualisation and hypervisor management (Proxmox VE)
 - ✅ Network design and configuration
 - ✅ Storage architecture and management
-- ✅ High availability and disaster recovery
+- ✅ High availability and disaster recovery planning
 
 **Evidence**:
-- Complete infrastructure defined in OpenTofu
-- Multi-node Kubernetes cluster with HA control plane
-- Distributed storage with Longhorn
-- Tiered backup strategy with 4 tiers
-- Network policies and segmentation
-- Automatic failover and recovery
-
-**Depth**: Can explain every component and its role in the system
+- Complete infrastructure defined in OpenTofu with reusable modules
+- Kubernetes cluster bootstrapped with HA-capable design (Talos Linux)
+- Distributed storage with Longhorn for Kubernetes PVs
+- ZFS-backed NAS storage for VM data disks
+- 4-tier backup strategy with automated scheduling and retention policies
+- Documented recovery objectives per data criticality tier
 
 ---
 
 ### 2. DevOps & Automation
 
 **Skills**:
-- ✅ CI/CD pipeline design
 - ✅ GitOps practices (ArgoCD)
-- ✅ Container orchestration
-- ✅ Infrastructure automation
-- ✅ Configuration management
-- ✅ Monitoring and observability
+- ✅ Container orchestration (Podman, Kubernetes)
+- ✅ Configuration management (Ansible)
+- ✅ Infrastructure automation (OpenTofu, Packer)
+- ✅ Image building and templating
 
 **Evidence**:
-- Automated VM provisioning with Packer and OpenTofu
-- GitOps deployment with ArgoCD
-- Declarative infrastructure and applications
-- Automated backup scheduling
-- Health checks and monitoring
-- Automated recovery procedures
-
-**Depth**: Can design and implement complete automation pipelines
+- Ansible roles for application deployment, Podman container lifecycle, PostgreSQL provisioning, and Nginx proxy configuration — all idempotent and version-controlled
+- ArgoCD manages Kubernetes applications declaratively from Git
+- Packer builds base images for Debian, Ubuntu, and Talos Linux
+- OpenTofu provisions VMs, disks, DNS records, and Proxmox resources end-to-end
 
 ---
 
 ### 3. Security & Compliance
 
 **Skills**:
-- ✅ Secrets management (Vault)
+- ✅ Secrets management (HashiCorp Vault)
 - ✅ RBAC and access control
 - ✅ Immutable infrastructure design
 - ✅ Encryption at rest and in transit
-- ✅ Audit logging and compliance
-- ✅ Network security and policies
+- ✅ Audit logging
 
 **Evidence**:
-- Vault integration for all secrets
-- Kubernetes RBAC with principle of least privilege
-- Talos Linux for immutable OS
-- AES-256 encryption and TLS
-- Comprehensive audit logging
-- Network policies for segmentation
+- Vault is the single source of truth for all secrets — SSH keys, database credentials, API tokens; nothing sensitive is in Git
+- Kubernetes RBAC enforces least privilege with service account isolation
+- Talos Linux provides an immutable, SSH-free OS for Kubernetes nodes
+- Vault audit logging records all secret access
 
-**Depth**: Can design security architecture for production systems
+**See**: [ADR-004](decisions/ADR-004-security-model-vault-rbac.md)
 
 ---
 
 ### 4. Decision-Making & Architecture
 
 **Skills**:
-- ✅ Technology evaluation and comparison
-- ✅ Trade-off analysis
-- ✅ Risk assessment and mitigation
+- ✅ Technology evaluation and systematic comparison
+- ✅ Trade-off analysis and risk assessment
 - ✅ Scalability planning
-- ✅ Cost optimization
-- ✅ Long-term maintainability
+- ✅ Long-term maintainability thinking
 
 **Evidence**:
-- 5 Architecture Decision Records (ADRs)
-- Systematic evaluation of alternatives
-- Documented trade-offs and consequences
-- Risk mitigation strategies
-- Scalability considerations
-- Cost-benefit analysis
-
-**Depth**: Can evaluate technologies systematically and justify choices
+- 5 Architecture Decision Records, each covering: problem statement, alternatives evaluated, decision rationale, consequences (positive and negative), and risk mitigations
+- Decisions cover IaC tooling, Kubernetes distribution, storage, secrets, and backup strategy
 
 ---
 
 ### 5. Operations & Reliability
 
 **Skills**:
-- ✅ Backup and disaster recovery
-- ✅ Monitoring and alerting
-- ✅ Incident response
+- ✅ Backup and disaster recovery design
+- ✅ Incident response procedures
 - ✅ Capacity planning
-- ✅ Performance tuning
-- ✅ Operational procedures
+- ✅ Operational runbooks
 
 **Evidence**:
-- 4-tier backup strategy with RPO/RTO targets
-- Disaster recovery procedures
-- Health monitoring and alerting
-- Capacity planning for growth
-- Performance characteristics documented
-- Operational runbooks
-
-**Depth**: Can design and implement operational excellence
+- 4-tier backup strategy with explicit RPO/RTO per tier, mapped to data criticality
+- Disaster recovery runbooks for node failure, storage failure, and full cluster rebuild
+- Maintenance schedules and escalation procedures documented in OPERATIONS.md
 
 ---
 
 ### 6. Communication & Documentation
 
 **Skills**:
-- ✅ Technical writing
-- ✅ Architecture documentation
-- ✅ Decision documentation
-- ✅ Audience-appropriate communication
-- ✅ Visual communication (diagrams)
-- ✅ Runbook creation
+- ✅ Technical writing for multiple audiences
+- ✅ Architecture documentation and diagrams
+- ✅ Decision documentation (ADRs)
+- ✅ Operational runbook creation
 
 **Evidence**:
-- Comprehensive README for multiple audiences
-- Detailed architecture documentation
-- Architecture Decision Records
-- Setup and operations guides
-- Clear code comments and examples
-- Architecture diagrams
+- README written for multiple audiences (learning, reference, contribution)
+- ARCHITECTURE.md covers layered design, data flows, design principles, and security model
+- OPERATIONS.md provides monitoring guidance, troubleshooting steps, and recovery runbooks
+- Each ADR documents the full reasoning, not just the outcome
 
-**Depth**: Can communicate complex technical concepts clearly
+---
+
+## Project Evolution
+
+The project started with a straightforward goal: automate a homelab using Infrastructure as Code. Over time it evolved through several phases:
+
+1. **Foundation**: Proxmox VE as hypervisor; OpenTofu for VM provisioning; Packer for base images
+2. **Application layer**: Ansible + Podman for deploying self-hosted applications on Debian VMs
+3. **Security hardening**: HashiCorp Vault integrated for centralised secrets management
+4. **Backup strategy**: Formalised tiered backup approach with PBS, replacing ad-hoc VM snapshots
+5. **Kubernetes**: Talos Linux and Kubernetes being introduced alongside the Ansible/Podman layer for container-native workloads
+
+Each phase was driven by a real operational need rather than technology for its own sake.
 
 ---
 
 ## Key Achievements
 
-### 1. Enterprise-Grade Architecture
+### 1. Hybrid Architecture with a Clear Migration Path
 
-**Achievement**: Designed and implemented a 7-layer architecture suitable for production use
-
-**Impact**:
-- Clear separation of concerns
-- Scalable from homelab to enterprise
-- Easy to understand and maintain
-- Suitable for learning and reference
-
-**Evidence**:
-- ARCHITECTURE.md with detailed layer descriptions
-- Component relationships documented
-- Data flow diagrams
-- Performance characteristics documented
-
----
+Designed and implemented a layered architecture where Ansible + Podman and Kubernetes coexist without conflict. The Ansible/Podman path keeps existing applications running; the Kubernetes path is built out incrementally. This avoids a high-risk "big bang" migration while still moving toward the target architecture.
 
 ### 2. Principled Technology Choices
 
-**Achievement**: Evaluated and documented all major technology decisions
+Every major technology decision is documented in an ADR with the problem context, alternatives evaluated, and the trade-offs accepted. This demonstrates systematic thinking and provides a resource for others making similar decisions.
 
-**Impact**:
-- Demonstrates critical thinking
-- Shows understanding of trade-offs
-- Provides learning resource for others
-- Justifies technology choices
+### 3. Security Built In From the Start
 
-**Evidence**:
-- 5 Architecture Decision Records
-- Systematic evaluation of alternatives
-- Documented consequences
-- Risk mitigation strategies
+Vault was introduced early, before it was strictly necessary, so that secret management patterns were established before applications proliferated. Talos Linux was chosen specifically for its no-SSH, no-shell, no-package-manager design — security through reduction rather than hardening.
 
----
+### 4. Cost-Optimised Backup Strategy
 
-### 3. Security-First Design
+Rather than backing everything up at the same frequency, data disks are assigned a tier at provisioning time based on criticality. This is encoded in the OpenTofu module so tier assignment is explicit, auditable, and enforced. Estimated storage savings of 40–50% over a uniform backup approach.
 
-**Achievement**: Implemented comprehensive security model from the ground up
+### 5. 100% Infrastructure as Code
 
-**Impact**:
-- Immutable infrastructure eliminates configuration drift
-- Vault provides centralized secrets management
-- RBAC enforces principle of least privilege
-- Audit logging enables compliance
-
-**Evidence**:
-- Talos Linux for immutable OS
-- Vault integration with automatic injection
-- Kubernetes RBAC configuration
-- Comprehensive audit logging
-
----
-
-### 4. Operational Excellence
-
-**Achievement**: Designed and documented operational procedures
-
-**Impact**:
-- Clear backup and recovery procedures
-- Disaster recovery capability
-- Monitoring and alerting
-- Runbooks for common tasks
-
-**Evidence**:
-- 4-tier backup strategy with RPO/RTO targets
-- Disaster recovery procedures
-- Operations guide
-- Backup documentation
-
----
-
-### 5. Infrastructure as Code
-
-**Achievement**: 100% infrastructure defined in code
-
-**Impact**:
-- Reproducible deployments
-- Version-controlled infrastructure
-- Easy to test changes
-- Audit trail of all changes
-
-**Evidence**:
-- Complete OpenTofu modules
-- Kubernetes manifests
-- Packer templates
-- All code in Git
-
----
-
-### 6. Comprehensive Documentation
-
-**Achievement**: Created documentation for multiple audiences
-
-**Impact**:
-- Suitable for job applications
-- Useful learning resource
-- Clear for operations teams
-- Professional presentation
-
-**Evidence**:
-- Enhanced README
-- Architecture documentation
-- Setup guide
-- Operations guide
-- Portfolio documentation
+Every resource — VMs, data disks, DNS records, Proxmox pools, Proxmox hardware mappings, IAC automation users — is defined in OpenTofu. No manual steps are required to reproduce the infrastructure. PiHole DNS is also managed via OpenTofu's PiHole provider.
 
 ---
 
@@ -287,337 +179,92 @@ This homelab project demonstrates **enterprise-grade infrastructure engineering*
 
 ### Problem 1: Choosing Between OpenTofu and Terraform
 
-**Challenge**: Which IaC tool to use for long-term infrastructure?
+**Challenge**: Which IaC tool to use for the long term?
 
-**Analysis**:
-- Terraform: Larger community, but vendor-controlled by HashiCorp
-- OpenTofu: Smaller community, but community-governed
-- Trade-off: Community size vs. vendor independence
+**Analysis**: Terraform has a larger ecosystem and more tutorials, but HashiCorp's licence change in 2023 introduced vendor lock-in risk. OpenTofu is community-governed under the Linux Foundation, maintains full API compatibility with Terraform, and aligns with the open-source philosophy of the project.
 
-**Solution**:
-- Chose OpenTofu for long-term independence
-- Documented decision in ADR-001
-- Evaluated alternatives systematically
-- Planned for Terraform compatibility
+**Decision**: OpenTofu. Compatibility with Terraform providers is maintained, so the decision has no practical downside today and eliminates future licence risk.
 
-**Learning**:
-- Vendor lock-in is a real concern
-- Community governance matters for long-term projects
-- Open-source philosophy aligns with project values
+**See**: [ADR-001](decisions/ADR-001-platform-choice-opentofu-vs-terraform.md)
 
 ---
 
-### Problem 2: Designing Kubernetes Cluster for Homelab
+### Problem 2: Kubernetes Distribution for a Homelab
 
-**Challenge**: How to run Kubernetes on Proxmox with security and simplicity?
+**Challenge**: How to run Kubernetes on Proxmox with strong security and low operational overhead?
 
-**Analysis**:
-- kubeadm: Flexible but mutable OS
-- k3s: Lightweight but still mutable
-- Talos Linux: Immutable, API-driven, Kubernetes-specific
-- Trade-off: Learning curve vs. security benefits
+**Analysis**: kubeadm and k3s are familiar and well-documented, but both run on mutable operating systems — meaning configuration drift is possible and the SSH attack surface exists. Talos Linux is purpose-built for Kubernetes: immutable OS, API-only access, minimal CVE surface, and atomic updates. The trade-off is a steeper learning curve and different debugging workflows.
 
-**Solution**:
-- Chose Talos Linux for immutable infrastructure
-- Documented decision in ADR-002
-- Designed 3-node HA cluster
-- Implemented automated updates
+**Decision**: Talos Linux. The security and immutability benefits outweigh the learning curve, and the API-driven model is a better fit for Infrastructure as Code.
 
-**Learning**:
-- Immutable infrastructure eliminates configuration drift
-- API-driven configuration enables IaC
-- Security benefits outweigh learning curve
+**See**: [ADR-002](decisions/ADR-002-kubernetes-approach-talos-linux.md)
 
 ---
 
-### Problem 3: Selecting Storage Solution
+### Problem 3: Persistent Storage for Kubernetes
 
-**Challenge**: How to provide persistent storage for Kubernetes applications?
+**Challenge**: How to provide replicated, snapshot-capable storage for Kubernetes applications without the operational complexity of Ceph?
 
-**Analysis**:
-- Ceph: Powerful but complex
-- OpenEBS: Flexible but complicated
-- Longhorn: Simple, Kubernetes-native
-- NFS: Simple but no replication
-- Trade-off: Simplicity vs. features
+**Analysis**: Ceph is the most capable option but requires dedicated nodes and significant expertise. OpenEBS is flexible but has multiple storage engines with different trade-offs. NFS has no built-in replication. Longhorn is Kubernetes-native, installs via Helm, provides configurable replication and snapshots, and ships with a management UI. It is a CNCF incubating project with active development.
 
-**Solution**:
-- Chose Longhorn for simplicity and Kubernetes integration
-- Documented decision in ADR-003
-- Configured 2-3 replica replication
-- Implemented snapshot support
+**Decision**: Longhorn. For homelab scale it provides the right balance of capability and operational simplicity.
 
-**Learning**:
-- Simpler solutions are often better for homelab
-- Kubernetes-native tools integrate better
-- Replication provides fault tolerance without RAID complexity
+**See**: [ADR-003](decisions/ADR-003-storage-strategy-longhorn.md)
 
 ---
 
-### Problem 4: Implementing Backup Strategy
+### Problem 4: Backing Up Multiple VMs with Different Criticality
 
-**Challenge**: How to backup multiple VMs with different criticality levels?
+**Challenge**: How to backup a mix of production databases, application state, development environments, and regenerable caches without over-investing in non-critical data?
 
-**Analysis**:
-- Single pool: Simple but inefficient
-- Tiered pools: Complex but cost-effective
-- Trade-off: Complexity vs. cost optimization
+**Analysis**: A single backup pool with uniform frequency wastes storage on low-criticality data and may under-invest in critical data. A tiered model assigns backup frequency and retention to criticality tiers and makes the assignment explicit in code.
 
-**Solution**:
-- Designed 4-tier backup strategy
-- Documented decision in ADR-005
-- Defined RPO/RTO for each tier
-- Automated tier assignment
+**Decision**: 4-tier strategy. Tier 1 (critical) backs up daily with 30-day retention; Tier 4 (cache/regenerable) backs up quarterly with 180-day retention. Each tier has defined RPO and RTO targets.
 
-**Learning**:
-- Different data types have different requirements
-- Tiered approach optimizes cost and protection
-- Clear tier definitions reduce confusion
+**See**: [ADR-005](decisions/ADR-005-tiered-backup-strategy.md)
 
 ---
 
-### Problem 5: Managing Secrets in Kubernetes
+### Problem 5: Managing Secrets Without Storing Them in Git
 
-**Challenge**: How to securely manage secrets without storing them in Git?
+**Challenge**: How to supply secrets to applications — database passwords, API keys, SSH keys — without ever committing them to version control?
 
-**Analysis**:
-- Kubernetes Secrets: Built-in but not encrypted
-- Sealed Secrets: Git-friendly but limited
-- Vault: Centralized, auditable, enterprise-ready
-- Trade-off: Operational complexity vs. security
+**Analysis**: Kubernetes Secrets are base64-encoded, not encrypted, and are easily leaked if cluster access is gained. Sealed Secrets help with Git storage but are cluster-specific. Vault provides centralised storage, encryption at rest, fine-grained access policies, automatic injection, rotation support, and a full audit log.
 
-**Solution**:
-- Chose Vault for centralized secrets management
-- Documented decision in ADR-004
-- Implemented automatic secret injection
-- Set up audit logging
+**Decision**: HashiCorp Vault. The operational overhead is justified by centralised control and auditability. Vault also serves both the Ansible/Podman and Kubernetes paths, so a single secrets store covers the full infrastructure.
 
-**Learning**:
-- Secrets should never be in Git
-- Centralized management enables rotation and auditing
-- Automatic injection reduces developer burden
+**See**: [ADR-004](decisions/ADR-004-security-model-vault-rbac.md)
 
 ---
 
 ## Lessons Learned
 
-### 1. Start Simple, Evolve Gradually
+### Start Simple, Evolve Gradually
 
-**Lesson**: Don't try to implement everything at once.
+Kubernetes and Vault were not part of the initial design. They were introduced when there was a clear reason for them. Trying to implement everything at once would have made the system harder to debug and understand. Incremental evolution keeps complexity manageable.
 
-**Application**:
-- Started with basic infrastructure
-- Added Kubernetes later
-- Implemented security incrementally
-- Added backup strategy after core infrastructure
+### Document Decisions, Not Just Implementation
 
-**Benefit**: Reduced complexity, easier to debug, better understanding
+Code documents what was done. ADRs document why. The why is harder to reconstruct later and more valuable to future decision-making. Writing ADRs also forces clearer thinking at decision time.
 
----
+### Security Is Cheaper to Build In Than to Retrofit
 
-### 2. Document Decisions, Not Just Implementation
+Introducing Vault after several applications were already deployed required updating every application's secret handling. Introducing it earlier would have been much cheaper. The same applies to Talos Linux — the immutability constraint shapes decisions from the start.
 
-**Lesson**: Why is more important than what.
+### Operational Procedures Are As Important As Infrastructure
 
-**Application**:
-- Created ADRs for all major decisions
-- Documented alternatives and trade-offs
-- Explained consequences and risks
-- Provided learning resource for others
+Infrastructure that can't be operated reliably is not useful. Defining RPO/RTO targets, writing recovery runbooks, and establishing maintenance schedules are as important as the infrastructure design itself.
 
-**Benefit**: Better decision-making, easier to justify choices, learning resource
+### Tiered Approaches Beat One-Size-Fits-All
+
+Both the backup strategy and the application architecture benefit from explicit tiering. Treating all data as equally critical wastes resources; treating all orchestration as identical ignores real trade-offs. Making the tiers explicit in code (backup tier assignment in OpenTofu) removes ambiguity.
+
+### Open-Source Governance Matters for Long-Term Projects
+
+The OpenTofu decision was driven partly by governance concerns. For infrastructure that will run for years, the project's governance model is as relevant as its current feature set.
 
 ---
 
-### 3. Security Should Be Built-In, Not Added Later
-
-**Lesson**: Security is easier to implement from the start.
-
-**Application**:
-- Chose Talos Linux for immutable OS
-- Implemented Vault from the beginning
-- Set up RBAC from day one
-- Configured audit logging early
-
-**Benefit**: Stronger security posture, easier to maintain, fewer retrofits
-
----
-
-### 4. Operational Procedures Are As Important As Infrastructure
-
-**Lesson**: Infrastructure is only useful if you can operate it.
-
-**Application**:
-- Designed backup strategy with clear RPO/RTO
-- Created disaster recovery procedures
-- Documented monitoring and alerting
-- Created operational runbooks
-
-**Benefit**: Confidence in system reliability, faster incident response
-
----
-
-### 5. Documentation Is a First-Class Artifact
-
-**Lesson**: Good documentation is as important as good code.
-
-**Application**:
-- Created comprehensive README
-- Documented architecture in detail
-- Created setup and operations guides
-- Documented all decisions
-
-**Benefit**: Easier to understand, easier to maintain, useful for others
-
----
-
-### 6. Immutable Infrastructure Eliminates Entire Classes of Problems
-
-**Lesson**: Immutability is worth the learning curve.
-
-**Application**:
-- Talos Linux eliminates configuration drift
-- Container images are immutable
-- Kubernetes rolling updates are atomic
-- Automated recovery is possible
-
-**Benefit**: Fewer bugs, easier debugging, better reliability
-
----
-
-### 7. Tiered Approaches Work Better Than One-Size-Fits-All
-
-**Lesson**: Different data types have different requirements.
-
-**Application**:
-- 4-tier backup strategy
-- Different RPO/RTO for each tier
-- Cost-optimized storage allocation
-- Clear tier definitions
-
-**Benefit**: Better cost optimization, clearer requirements, easier scaling
-
----
-
-### 8. Open-Source Governance Matters
-
-**Lesson**: Vendor lock-in is a real concern.
-
-**Application**:
-- Chose OpenTofu over Terraform
-- Chose Talos Linux (community-driven)
-- Chose Longhorn (CNCF project)
-- Chose Vault (open-source)
-
-**Benefit**: Long-term independence, community support, alignment with values
-
----
-
-## Technical Depth
-
-### Infrastructure as Code Expertise
-
-**Demonstrated**:
-- OpenTofu module design and composition
-- State management and drift detection
-- Provider integration (Proxmox, Kubernetes, Vault)
-- Variable parameterization and outputs
-- Module testing and validation
-
-**Evidence**:
-- `tofu/infrastructure/modules/` - Reusable modules
-- `tofu/infrastructure/vms/` - VM provisioning
-- `tofu/services/` - Service configuration
-- Complete infrastructure in code
-
-**Depth**: Can design and implement complex infrastructure modules
-
----
-
-### Kubernetes Expertise
-
-**Demonstrated**:
-- Cluster design and deployment
-- RBAC and access control
-- Network policies and segmentation
-- Storage provisioning and management
-- Application deployment and scaling
-- Monitoring and observability
-
-**Evidence**:
-- `kubernetes/bootstrap/` - Cluster initialization
-- `kubernetes/apps/` - Application deployments
-- Longhorn storage configuration
-- MetalLB load balancer setup
-- Ingress-NGINX routing
-
-**Depth**: Can design and operate production Kubernetes clusters
-
----
-
-### Security Architecture Expertise
-
-**Demonstrated**:
-- Secrets management (Vault)
-- RBAC and access control
-- Immutable infrastructure design
-- Encryption at rest and in transit
-- Audit logging and compliance
-- Network security and policies
-
-**Evidence**:
-- Vault integration with automatic injection
-- Kubernetes RBAC configuration
-- Talos Linux for immutable OS
-- Network policies for segmentation
-- Comprehensive audit logging
-
-**Depth**: Can design security architecture for production systems
-
----
-
-### DevOps & Automation Expertise
-
-**Demonstrated**:
-- Infrastructure automation
-- Image building (Packer)
-- GitOps practices (ArgoCD)
-- Backup automation
-- Monitoring and alerting
-- Disaster recovery procedures
-
-**Evidence**:
-- Packer templates for VM images
-- OpenTofu for infrastructure automation
-- ArgoCD for application deployment
-- Backup scheduling and automation
-- Health checks and monitoring
-
-**Depth**: Can design and implement complete automation pipelines
-
----
-
-### Decision-Making & Architecture Expertise
-
-**Demonstrated**:
-- Technology evaluation and comparison
-- Trade-off analysis
-- Risk assessment and mitigation
-- Scalability planning
-- Cost optimization
-- Long-term maintainability
-
-**Evidence**:
-- 5 Architecture Decision Records
-- Systematic evaluation of alternatives
-- Documented trade-offs and consequences
-- Risk mitigation strategies
-- Scalability considerations
-
-**Depth**: Can evaluate technologies systematically and justify choices
-
----
-
-**Last Updated**: November 2025  
-**Status**: Active  
+**Last Updated**: May 2026
+**Status**: Active
 **Maintainer**: Eduard
