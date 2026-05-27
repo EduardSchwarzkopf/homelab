@@ -19,4 +19,4 @@
     owner: "{{ plane_service_user }}"
     group: "{{ plane_service_user }}"
     mode: "0644"
-  notify: Restart plane-minio
+  notify: Restart plane services
