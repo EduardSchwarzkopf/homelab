@@ -37,59 +37,52 @@ A fully automated infrastructure stack that manages:
 graph TD
     User["User / Browser"]
 
-    subgraph Proxmox["Proxmox VE"]
-        subgraph VM_Layer["Debian VMs (Ansible + Podman)"]
-            NPM["Nginx Proxy Manager\n(utility VM)"]
-            Office["Office VM\nDocmost · Plane · Paperless"]
-            Media["Media VM\nImmich · Retro Games"]
-            DB["Database VM\nPostgreSQL · pgvector"]
-            Games["Games VM"]
-        end
+    subgraph Physical["Physical — 192.168.178.0/24"]
+        FB["Fritzbox · 192.168.178.1<br/>─────<br/>Default Gateway · VPN Endpoint"]
+    end
 
-        subgraph K8s_Layer["Kubernetes — Talos Linux (in progress)"]
-            MetalLB["MetalLB\n(LoadBalancer)"]
-            Nginx["Ingress-NGINX"]
-            ArgoCD["ArgoCD\n(GitOps)"]
-            OpenWebUI["Open-WebUI"]
-            Longhorn["Longhorn\n(Storage)"]
+    subgraph RPi["Raspberry Pi"]
+        PH["Pi‑hole<br/>─────<br/>DNS :53 · DHCP Server"]
+        NPM["Nginx Proxy Manager<br/>─────<br/>Reverse Proxy :443"]
+        VAULT["HashiCorp Vault<br/>─────<br/>vault.lan.schwarzkopf.center"]
+    end
+
+    subgraph Proxmox["Proxmox VE — Homeserver"]
+        subgraph VMs["VMs — Debian 12 · Podman"]
+            OFF["office<br/>──────<br/>Plane · Leaf Wiki<br/>Paperless · Docmost<br/>PostgreSQL :5432"]
+
+            MED["media<br/>──────<br/>Immich<br/>Retro Games (SNES / N64 / GC)<br/>Postgres‑VectorChord :5433"]
+
+            GAMES["games"]
+            UTIL["utility"]
+            BACKUP["backup<br/>Proxmox Backup Server"]
         end
 
         subgraph Storage["Storage"]
-            ZFS["ZFS\n(NAS · OS disks)"]
-            PBS["Proxmox Backup Server"]
+            ZFS["ZFS Pools<br/>zfs‑nas · vm‑os‑pool"]
         end
+
     end
 
-    Git["Git Repository"]
-    Vault["HashiCorp Vault\n(Secrets)"]
-    PiHole["PiHole\n(DNS)"]
+    User -->|"WAN"| FB
+    FB -->|"LAN"| PH
+    FB -->|"LAN"| Proxmox
 
-    User -->|DNS lookup| PiHole
-    PiHole -->|VM apps| NPM
-    PiHole -->|K8s apps| MetalLB
+    PH -->|"DHCP · DNS :53"| User
+    PH -.->|"upstream DNS"| FB
 
-    NPM --> Office
-    NPM --> Media
-    NPM --> Games
+    NPM -->|"reverse proxy :443"| OFF
+    NPM -->|"reverse proxy :443"| MED
+    NPM -->|"reverse proxy :443"| GAMES
 
-    Office --> DB
-    Media --> DB
+    OFF -->|"data"| ZFS
+    MED -->|"data"| ZFS
+    GAMES -->|"data"| ZFS
+    UTIL -->|"data"| ZFS
+    BACKUP -->|"backups"| ZFS
 
-    MetalLB --> Nginx
-    Nginx --> OpenWebUI
-
-    Git -->|watches| ArgoCD
-    ArgoCD -->|applies manifests| OpenWebUI
-
-    OpenWebUI --> Longhorn
-    Office & Media --> ZFS
-
-    Vault -->|injects secrets| Office
-    Vault -->|injects secrets| Media
-    Vault -->|injects secrets| OpenWebUI
-
-    ZFS -->|backed up to| PBS
-    Longhorn -->|backed up to| PBS
+    OFF -.->|"secrets"| VAULT
+    MED -.->|"secrets"| VAULT
 ```
 
 ## Quick Start
