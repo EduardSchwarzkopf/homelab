@@ -1,0 +1,20 @@
+---
+- name: Rescan all SCSI disks to pick up expanded size
+  become: true
+  ansible.builtin.shell: |
+    for host in /sys/class/scsi_host/host*; do
+      echo "- - -" > "$host/scan"
+    done
+    for disk in /sys/block/sd*; do
+      echo 1 > "$disk/device/rescan"
+    done
+  changed_when: true
+
+- name: Show updated disk sizes
+  ansible.builtin.command: lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
+  register: lsblk_output
+  changed_when: false
+
+- name: Display disk sizes
+  ansible.builtin.debug:
+    msg: "{{ lsblk_output.stdout }}"

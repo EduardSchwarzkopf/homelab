@@ -2,3 +2,7 @@
 - name: Manage disks
   ansible.builtin.import_tasks: setup_additional_disks.yml
   tags: disks
+
+- name: Rescan disks after expansion
+  ansible.builtin.import_tasks: rescan_disks.yml
+  tags: rescan
