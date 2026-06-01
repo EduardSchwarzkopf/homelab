@@ -25,16 +25,34 @@ plane_mount_dir: /mnt/{{ plane_app_name }}
 plane_uploads_dir: "{{ plane_mount_dir }}/uploads"
 plane_minio_image: "docker.io/minio/minio:latest"
 
-plane_container_list:
-  - plane-redis.container
-  - plane-mq.container
-  - api.container
-  - worker.container
-  - beat-worker.container
-  - migrator.container
-  - monitor.container
-  - web.container
-  - space.container
-  - admin.container
-  - live.container
-  - proxy.container
+plane_infra_services:
+  - plane-redis.service
+  - plane-mq.service
+  - plane-minio.service
+
+plane_backend_services:
+  - api.service
+  - worker.service
+  - beat-worker.service
+  - migrator.service
+  - monitor.service
+  - automation-consumer.service
+  - outbox-poller.service
+  - silo.service
+
+plane_frontend_services:
+  - iframely.service
+  - web.service
+  - space.service
+  - admin.service
+  - live.service
+  - proxy.service
+
+plane_all_services: "{{ plane_infra_services + plane_backend_services + plane_frontend_services }}"
+
+plane_container_list: >-
+  {{
+    (plane_backend_services + plane_frontend_services + ['plane-redis.service', 'plane-mq.service'])
+    | map('replace', '.service', '.container')
+    | list
+  }}
