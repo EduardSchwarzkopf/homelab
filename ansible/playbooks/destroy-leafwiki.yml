@@ -1,8 +1,0 @@
-- name: Deploy productivity apps on office server via Podman
-  hosts: pihole
-
-  tasks:
-    - name: destroy docmost
-      ansible.builtin.import_role:
-        name: apps/leafwiki
-        tasks_from: destroy.yml
