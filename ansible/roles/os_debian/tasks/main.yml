@@ -6,3 +6,6 @@
 - name: Rescan disks after expansion
   ansible.builtin.import_tasks: rescan_disks.yml
   tags: rescan
+
+- name: Configure journald
+  ansible.builtin.import_tasks: journald.yml
