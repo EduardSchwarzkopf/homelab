@@ -1,0 +1,5 @@
+---
+# tasks/profiles.yml — nothing to do here.
+# Profiles are created and managed by the user on the VM:
+#   hermes profile create <name>
+#   hermes profile alias <name>   # creates ~/.local/bin/<name> wrapper

@@ -1,0 +1,18 @@
+---
+# meta/main.yml — hermes_agent role metadata
+
+dependencies: []
+
+galaxy_info:
+  role_name: hermes_agent
+  description: Install hermes-agent and provision per-user Linux accounts
+  author: schwarzkopf
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm, trixie]
+  galaxy_tags:
+    - ai
+    - hermes
+    - agent

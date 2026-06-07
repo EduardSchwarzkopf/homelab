@@ -1,0 +1,17 @@
+---
+# defaults/main.yml — hermes-agent role (single user, multiple profiles)
+
+hermes_install_url: "https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh"
+hermes_branch: "main"
+
+# Persistent disk mount point
+hermes_mount_dir: /mnt/hermes
+hermes_disk_scsi_num: 1
+
+# Single Linux user who owns hermes and runs it
+hermes_user: debian
+hermes_group: debian
+
+# Default profile to manage via systemd (comma-separated for multiple)
+hermes_profiles:
+  - hermine

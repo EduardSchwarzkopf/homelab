@@ -1,0 +1,259 @@
+---
+# tasks/install.yml — hermes-agent (single user, multiple profiles)
+#
+# Layout:
+#   /mnt/hermes/                              ← HERMES_HOME (persistent disk)
+#   /mnt/hermes/hermes-agent/                ← shared install
+#   /mnt/hermes/hermes-agent/bin/hermes       ← original binary
+#   /mnt/hermes/hermes-agent/venv-system/bin/hermes  ← system-site-packages venv
+#   /mnt/hermes/profiles/<name>/             ← additional hermes profiles
+#
+# User:
+#   ~/.hermes           →  /mnt/hermes (symlink)
+#   ~/.local/bin/hermes →  system venv hermes
+
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - python3.13-venv
+    state: present
+    update_cache: true
+  become: true
+
+# ----------------------------------------------------------------------
+# Disk must already be mounted by os_debian role
+- name: Set hermes mount owner
+  ansible.builtin.file:
+    path: "{{ hermes_mount_dir }}"
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "02775"
+    recurse: true
+  become: true
+
+# ----------------------------------------------------------------------
+# Check if hermes is already installed
+- name: Check for existing hermes binary
+  ansible.builtin.stat:
+    path: "{{ hermes_mount_dir }}/hermes-agent/venv-system/bin/hermes"
+  register: _hermes_binary_ready
+
+- name: Check for existing hermes install dir
+  ansible.builtin.stat:
+    path: "{{ hermes_mount_dir }}/hermes-agent"
+  register: _hermes_install_dir
+
+# ----------------------------------------------------------------------
+# Install hermes if not present
+- name: Run hermes install script
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      install_script=$(mktemp)
+      curl -fsSL {{ hermes_install_url }} -o "$install_script"
+      chown {{ hermes_user }} "$install_script"
+      sudo -u {{ hermes_user }} \
+        env HERMES_HOME={{ hermes_mount_dir }} PYTHONPATH= PYTHONHOME= UV_NO_CONFIG=1 \
+        bash "$install_script" --branch {{ hermes_branch }} --skip-browser --skip-setup
+      rm -f "$install_script"
+  async: 1800
+  poll: 10
+  when: not _hermes_install_dir.stat.exists
+  become: true
+
+# ----------------------------------------------------------------------
+# Re-check after install, then create system-site-packages venv
+- name: Check hermes binary after install
+  ansible.builtin.stat:
+    path: "{{ hermes_mount_dir }}/hermes-agent/venv-system/bin/hermes"
+  register: _hermes_binary_ready
+  become: true
+
+- name: Make hermes-agent group-traversable
+  ansible.builtin.shell: |
+    sudo chmod -R g+X /mnt/hermes/hermes-agent
+  become: true
+
+- name: Create system-Python venv with hermes
+  ansible.builtin.shell: |
+    set -e
+    VENV={{ hermes_mount_dir }}/hermes-agent/venv-system
+    /usr/bin/python3 -m venv --system-site-packages "$VENV"
+    "$VENV/bin/pip" install python-dotenv
+    "$VENV/bin/pip" install -e {{ hermes_mount_dir }}/hermes-agent
+    sudo chmod -R g+rx "$VENV"
+  args:
+    creates: "{{ hermes_mount_dir }}/hermes-agent/venv-system/bin/hermes"
+  become: true
+
+# ----------------------------------------------------------------------
+# User symlinks
+- name: Create .local/bin
+  ansible.builtin.file:
+    path: "/home/{{ hermes_user }}/.local/bin"
+    state: directory
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0755"
+  become: true
+
+- name: Symlink ~/.hermes → persistent disk
+  ansible.builtin.file:
+    src: "{{ hermes_mount_dir }}"
+    dest: "/home/{{ hermes_user }}/.hermes"
+    state: link
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+  become: true
+
+- name: Symlink hermes binary
+  ansible.builtin.file:
+    src: "{{ hermes_mount_dir }}/hermes-agent/venv-system/bin/hermes"
+    dest: "/home/{{ hermes_user }}/.local/bin/hermes"
+    state: link
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0755"
+    force: true
+  become: true
+
+- name: Ensure .local/bin is in PATH
+  ansible.builtin.lineinfile:
+    path: "/home/{{ hermes_user }}/.bashrc"
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    regexp: '^\s*export\s+PATH=.*\.local/bin'
+    create: true
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0644"
+  become: true
+
+- name: Set HERMES_HOME in .bashrc
+  ansible.builtin.lineinfile:
+    path: "/home/{{ hermes_user }}/.bashrc"
+    line: 'export HERMES_HOME="{{ hermes_mount_dir }}"'
+    regexp: '^\s*export\s+HERMES_HOME='
+    create: true
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0644"
+  become: true
+
+- name: Set HERMES_HOME in .profile
+  ansible.builtin.lineinfile:
+    path: "/home/{{ hermes_user }}/.profile"
+    line: 'export HERMES_HOME="{{ hermes_mount_dir }}"'
+    regexp: '^\s*export\s+HERMES_HOME='
+    create: true
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0644"
+  become: true
+
+- name: Persist HERMES_HOME system-wide
+  ansible.builtin.lineinfile:
+    path: /etc/environment.d/hermes-home.conf
+    line: 'HERMES_HOME={{ hermes_mount_dir }}'
+    regexp: '^\s*HERMES_HOME='
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+# ----------------------------------------------------------------------
+# Systemd service for gateway (per profile)
+- name: Ensure systemd user config directory exists
+  ansible.builtin.file:
+    path: "/home/{{ hermes_user }}/.config/systemd/user"
+    state: directory
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0755"
+  become: true
+
+- name: Deploy systemd service for each profile
+  ansible.builtin.template:
+    src: templates/hermes-gateway.service.j2
+    dest: "/home/{{ hermes_user }}/.config/systemd/user/hermes-gateway-{{ item }}.service"
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0644"
+  become: true
+  loop: "{{ hermes_profiles }}"
+
+- name: Enable linger for hermes user (survives reboot without login)
+  ansible.builtin.shell: |
+    loginctl enable-linger {{ hermes_user }}
+  become: true
+
+- name: Daemon-reload systemd user instance
+  ansible.builtin.shell: |
+    systemctl --user daemon-reload
+  become: true
+
+- name: Enable and start hermes gateway services
+  ansible.builtin.shell: |
+    systemctl --user enable --now hermes-gateway-{{ item }}.service
+  become: true
+  loop: "{{ hermes_profiles }}"
+
+# ----------------------------------------------------------------------
+# Chromium browser for browser toolset
+- name: Install Chromium system dependencies
+  ansible.builtin.apt:
+    name:
+      - libnss3
+      - libxkbcommon0
+      - libgbm1
+      - libasound2
+      - libatk1.0-0
+      - libatk-bridge2.0-0
+      - libcups2
+      - libdrm2
+      - libxcomposite1
+      - libxdamage1
+      - libxrandr2
+      - libpango-1.0-0
+      - libcairo2
+      - libatspi2.0-0
+      - libdbus-1-3
+      - nodejs
+      - npm
+    state: present
+  become: true
+
+- name: Check if Playwright cache exists
+  ansible.builtin.stat:
+    path: "/home/{{ hermes_user }}/.cache/ms-playwright"
+  register: _playwright_cache_exists
+  become: true
+  ignore_errors: true
+
+- name: Install Chromium into user's Playwright cache
+  ansible.builtin.shell: |
+    sudo -u {{ hermes_user }} \
+      env HOME=/home/{{ hermes_user }} npm_config_cache=/home/{{ hermes_user }}/.npm \
+      /bin/bash -c 'cd /home/{{ hermes_user }} && npm install playwright && npx playwright install chromium'
+  args:
+    creates: "/home/{{ hermes_user }}/.cache/ms-playwright"
+  async: 600
+  poll: 20
+  when: not _playwright_cache_exists.stat.exists
+
+# ----------------------------------------------------------------------
+# Bootstrap config for default profile
+- name: Create bootstrap config
+  ansible.builtin.copy:
+    content: |
+      # Bootstrap config — run `hermes setup` to configure your model + provider
+      browser:
+        provider: local
+    dest: "{{ hermes_mount_dir }}/config.yaml"
+    owner: "{{ hermes_user }}"
+    group: "{{ hermes_group }}"
+    mode: "0644"
+    force: false
+  become: true

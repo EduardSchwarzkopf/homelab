@@ -1,0 +1,32 @@
+---
+# tasks/main.yml — hermes_agent role entry point
+
+- name: Setup hermes data disk
+  ansible.builtin.import_role:
+    name: os_debian
+    tasks_from: setup_additional_disks.yml
+  vars:
+    disks:
+      - scsi_num: "{{ hermes_disk_scsi_num }}"
+        mount_path: "{{ hermes_mount_dir }}"
+
+- name: Ensure hermes group exists
+  ansible.builtin.group:
+    name: "{{ hermes_group }}"
+    state: present
+  become: true
+
+- name: Ensure hermes user exists with bash
+  ansible.builtin.user:
+    name: "{{ hermes_user }}"
+    shell: /bin/bash
+    group: "{{ hermes_group }}"
+    create_home: true
+    append: true
+  become: true
+
+- name: Install hermes-agent
+  ansible.builtin.import_tasks: install.yml
+
+- name: Create hermes profiles
+  ansible.builtin.import_tasks: profiles.yml
