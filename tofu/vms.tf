@@ -1,6 +1,6 @@
 
 locals {
-  debian_vm_id                 = 102
+  debian_vm_id                 = 100
   nas_datastore_id             = "zfs-nas"
   default_environment          = "prod"
   default_os_disk_datastore_id = "vm-os-pool"
@@ -17,6 +17,19 @@ locals {
       memory_gb    = 8
       os_disk_size = 30
       additional_disks = {
+      }
+    }
+    ai = {
+      role         = "AI Assistent Server"
+      cpu_cores    = 2
+      memory_gb    = 4
+      os_disk_size = 50
+      data_disk = {
+        hermes = {
+          datastore_id = local.nas_datastore_id
+          size         = 10
+          backup_tier  = 2
+        }
       }
     }
     utility = {
