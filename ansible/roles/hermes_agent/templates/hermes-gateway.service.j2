@@ -1,0 +1,25 @@
+[Unit]
+Description=Hermes Agent Gateway - Profile {{ item }}
+After=network-online.target mnt-hermes.mount
+Wants=network-online.target mnt-hermes.mount
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/mnt/hermes/hermes-agent/venv-system/bin/python -m hermes_cli.main --profile {{ item }} gateway run --replace
+WorkingDirectory=/mnt/hermes/profiles/{{ item }}
+Environment="HERMES_HOME=/mnt/hermes/profiles/{{ item }}"
+Restart=always
+RestartSec=5
+RestartMaxDelaySec=300
+RestartSteps=5
+RestartForceExitStatus=75
+KillMode=mixed
+KillSignal=SIGTERM
+ExecReload=/bin/kill -USR1 $MAINPID
+TimeoutStopSec=210
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
