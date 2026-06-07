@@ -9,3 +9,9 @@
   hosts: media
   roles:
     - role: apps/immich
+
+- name: Deploy hermes-agent on AI server
+  hosts: ai
+
+  roles:
+    - role: hermes_agent
